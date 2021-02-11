@@ -441,12 +441,15 @@ void user::registerAccount(User_id _user_id, Passwd _passwd, User_name _user_nam
 
 void user::deleteAccount(User_id _user_id) {
     checkAuthority(7)
-    try{
-        user_tree.find(_user_id);
+    if (_user_id == "root") {
         ErrorOccur
     }
-    catch (Not_Found){
+    try{
+        user_tree.find(_user_id);
         user_tree.erase(_user_id);
+    }
+    catch (Not_Found){
+        ErrorOccur
     }
 }
 
