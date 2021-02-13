@@ -29,7 +29,7 @@ private:
     fstream fin, fout;
     fstream fin_next_tree;
 #ifdef stub
-    map<StringType, T> Map;
+    multimap<StringType, T> Map;
 #endif
 public:
     explicit BPlusTree<T>(const StringType &_filename) : filename(_filename){}
@@ -43,10 +43,16 @@ public:
 #ifdef stub
 
     T find(const StringType &key){
-        auto ret = Map.find(key);
-        if (ret == Map.end())
-            throw Not_Found();
-        return (*ret).second;
+//        auto ret = Map.find(key);
+//        if (ret == Map.end())
+//            throw NotFound();
+//        return (*ret).second;
+
+        auto v = findVector(key);
+        auto sz = v.size();
+        if (sz == 0) throw NotFound();
+        if (sz == 1) return v[0];
+        throw MultipleElement();
     }
 
     void insert(const T &o){
@@ -57,8 +63,14 @@ public:
         Map.erase(key);
     }
 
-    vector<int> &findall(const StringType target){
-
+    vector<T> findVector(const StringType &key){
+        vector<T> v;
+        int i = Map.count(key);
+        auto it = Map.find(key);
+        while(i--){
+            v.push_back(it++->second);
+        }
+        return v;
     }
 
 
@@ -75,3 +87,8 @@ public:
 
 
 #endif //SRC_BPLUSTREE_H
+
+
+//1.树的设计：双类型模板？
+//2.怎么索引结构设计？
+

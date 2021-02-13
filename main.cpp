@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 //--------------------------------------------------
 
 #include <regex>
@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include "BPlusTree.h"
+
 using namespace std;
 
 //--------------------------------------------------
@@ -38,7 +39,7 @@ struct Book {
     Price price = -1;
     Quantity quantity = 0;
 
-    ISBN key() const {return isbn;}
+    ISBN key() const { return isbn; }
 
     Book() = default;
 
@@ -59,7 +60,7 @@ struct CoreUser {
     Authority authority;
     ISBN selected_book;
 
-    User_id key() const {return user_id;}
+    User_id key() const { return user_id; }
 
     CoreUser() = default;
 
@@ -90,37 +91,50 @@ struct User : CoreUser {
 
 BPlusTree<User> user_tree("");
 BPlusTree<Book> book_tree("");
-const map<BookInfoType, FileName> c_bookShowFileMap{{t_ISBN, ""}, {t_Book_name, ""}, {t_Author, ""}, {t_Keyword, ""}};
+const map<BookInfoType, FileName> c_bookShowFileMap{{t_ISBN,      ""},
+                                                    {t_Book_name, ""},
+                                                    {t_Author,    ""},
+                                                    {t_Keyword,   ""}};
 
 
-stack<CoreUser> user_stack;
+vector<CoreUser> user_vector;
 //stack<ISBN> book_stack;
 
 //-------------------------------------------------
 //private Macro
 
-#define ErrorOccur {\
-    cout << "Invalid" << endl;\
-    return;\
-}
+//#define ErrorOccur {\
+//    cout << "Invalid" << endl;\
+//    return;\
+//}
 
-#define checkAuthority(x) { \
-    if (user_stack.empty() || user_stack.top().authority < x) {\
-        ErrorOccur;\
-    }\
+//#define checkAuthority(x) { \
+//    if (user_vector.empty() || user_vector.back().authority < x) {\
+//        ErrorOccur;\
+//    }\
+//}
+
+void checkAuthority(Authority x) {
+    if (user_vector.empty() || user_vector.back().authority < x) {
+        throw ErrorOccur();
+    }
 }
 
 #define FindAndPopSelectedBook  \
-    if (user_stack.empty() || user_stack.top().selected_book == "") {\
-        ErrorOccur;\
+    if (user_vector.empty() || user_vector.back().selected_book == "") {\
+        throw ErrorOccur();\
     }                  \
-    ISBN& usb = user_stack.top().selected_book; \
+    ISBN& usb = user_vector.back().selected_book; \
     Book tbook = book_tree.find(usb);   \
     book_tree.erase(usb);
 
-//private functions
-void addFinance(char, Price);
+//file functions
 
+namespace file {
+
+    void addFinance(char, Price);
+
+}
 //-------------------------------------------------
 
 void initialize();
@@ -185,20 +199,26 @@ int main() {
 #endif
     initialize();
     while (true) {
-        function_chooser();
+        try {
+            function_chooser();
+        }
+        catch (ErrorOccur) {
+            cout << "Invalid" << endl;
+        }
     }
     return 0;
 }
 
 void initialize() {
-    auto firstOpen = []()->bool{
+    auto firstOpen = []() -> bool {
         //TODO
     };
-    auto openMark = [](){
+    auto openMark = []() {
         //TODO
     };
     if (firstOpen()) {
         user_tree.insert(User("root", "sjtu", "root", 7));
+        //TODO
         openMark();
     }
     //TODO?
@@ -216,48 +236,48 @@ void function_chooser() {
             user_name = " ([^ ]{1,30})",
             permission = " ([731])";
     static const regex
-            rule_su("su" + user_id + passwd),
-            rule_su_direct("su" + user_id),
-            rule_logout("logout"),
-            rule_useradd("useradd" + user_id + passwd + permission + user_name),
-            rule_register("register" + user_id + passwd + user_name),
-            rule_delete("delete" + user_id),
-            rule_passwd("passwd" + user_id + passwd + passwd),
-            rule_passwd_direct("passwd" + user_id + passwd);
+            rule_su("^su" + user_id + passwd + "$"),
+            rule_su_direct("^su" + user_id + "$"),
+            rule_logout("^logout$"),
+            rule_useradd("^useradd" + user_id + passwd + permission + user_name + "$"),
+            rule_register("^register" + user_id + passwd + user_name + "$"),
+            rule_delete("^delete" + user_id + "$"),
+            rule_passwd("^passwd" + user_id + passwd + passwd + "$"),
+            rule_passwd_direct("^passwd" + user_id + passwd + "$");
     //book
     static const string
             _ISBN = "(.{1,20})", csISBN = " " + _ISBN, e_ISBN = " -ISBN=" + _ISBN,
-            _book_name = "(\".{1,60}\")", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
+            _book_name = "\"(.{1,60})\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
             _author = _book_name, author = book_name, e_author = e_book_name,
-            _keyword = "(\"[^ ]{1,60}\")", keyword = " " + _keyword, e_keyword = " -keyword=" + _keyword,
+            _keyword = "\"([^ ]{1,60})\"", keyword = " " + _keyword, e_keyword = " -keyword=" + _keyword,
             _price = "(\\d+(?:\\.\\d+)?)", price = " " + _price, e_price = " -price=" + _price,
             cost_price = price,
             quantity = " (\\d+)",
             time = " (\\d+)";
     static const regex
-            rule_select("select" + csISBN),
-            rule_modify("modify.*"),
-            rule_modify_ISBN("modify.*" + e_ISBN + ".*"),
-            rule_modify_name("modify.*" + e_book_name + ".*"),
-            rule_modify_author("modify.*" + e_author + ".*"),
-            rule_modify_keyword("modify.*" + e_keyword + ".*"),
-            rule_modify_price("modify.*" + e_price + ".*"),
-            rule_import("import" + quantity + cost_price),
-            rule_show("show.*"),
-            rule_show_ISBN("show" + e_ISBN),
-            rule_show_name("show" + e_book_name),
-            rule_show_author("show" + e_author),
-            rule_show_keyword("show" + e_keyword),
-            rule_show_finance("show finance"),
-            rule_show_finance_time("show finance" + time),
-            rule_buy("buy" + csISBN + quantity);
+            rule_select("^select" + csISBN + "$"),
+            rule_modify("^modify.*$"),
+            rule_modify_ISBN("^modify.*" + e_ISBN + ".*$"),
+            rule_modify_name("^modify.*" + e_book_name + ".*$"),
+            rule_modify_author("^modify.*" + e_author + ".*$"),
+            rule_modify_keyword("^modify.*" + e_keyword + ".*$"),
+            rule_modify_price("^modify.*" + e_price + ".*$"),
+            rule_import("^import" + quantity + cost_price + "$"),
+            rule_show("^show.*$"),
+            rule_show_ISBN("^show" + e_ISBN + "$"),
+            rule_show_name("^show" + e_book_name + "$"),
+            rule_show_author("^show" + e_author + "$"),
+            rule_show_keyword("^show" + e_keyword + "$"),
+            rule_show_finance("^show finance$"),
+            rule_show_finance_time("^show finance" + time + "$"),
+            rule_buy("^buy" + csISBN + quantity + "$");
     static const regex
-            rule_report_finance("report finance"),
-            rule_report_employee("report employee"),
-            rule_report_myself("report myself"),
-            rule_log("log"),
-            rule_exit("exit"),
-            rule_quit("quit");
+            rule_report_finance("^report finance$"),
+            rule_report_employee("^report employee$"),
+            rule_report_myself("^report myself$"),
+            rule_log("^log$"),
+            rule_exit("^exit$"),
+            rule_quit("^quit$");
 
     getline(cin, input);
 
@@ -390,10 +410,10 @@ void function_chooser() {
     if (regex_search(input, parameter, rule_quit)) {
         exit(0);
     }
-
-
-    cout << "Invalid" << endl;
-    return;
+    if (cin.eof()){
+        exit(0);
+    }
+    throw ErrorOccur();
 }
 
 
@@ -401,36 +421,38 @@ void user::su(User_id _user_id, Passwd _passwd) {
     User l_user;
     try {
         l_user = user_tree.find(_user_id);
-    } catch (Not_Found) {
-        ErrorOccur
+    } catch (NotFound) {
+        throw ErrorOccur();
     }
-    if (l_user.passwd != _passwd) ErrorOccur
-    user_stack.push(l_user);
+    if (l_user.passwd != _passwd) {
+        throw ErrorOccur();
+    }
+    user_vector.push_back(l_user);
 }
 
 void user::suDirect(User_id _user_id) {
     User l_user;
     try {
         l_user = user_tree.find(_user_id);
-    } catch (Not_Found) {
-        ErrorOccur
+    } catch (NotFound) {
+        throw ErrorOccur();
     }
-    checkAuthority(l_user.authority * 2 + 1)
-    user_stack.push(l_user);
+    checkAuthority(l_user.authority * 2 + 1);
+    user_vector.push_back(l_user);
 }
 
 void user::logout() {
-    if (user_stack.empty()) ErrorOccur
-    user_stack.pop();
+    checkAuthority(1);
+    user_vector.pop_back();
 }
 
 void user::useradd(User_id _user_id, Passwd _passwd, Authority _authority, User_name _user_name) {
-    checkAuthority(_authority * 2 + 1)
-    try{
+    checkAuthority(_authority * 2 + 1);
+    try {
         user_tree.find(_user_id);
-        ErrorOccur
+        throw ErrorOccur();
     }
-    catch (Not_Found){
+    catch (NotFound) {
         user_tree.insert(User(_user_id, _passwd, _user_name, _authority));
     }
 }
@@ -440,192 +462,138 @@ void user::registerAccount(User_id _user_id, Passwd _passwd, User_name _user_nam
 }
 
 void user::deleteAccount(User_id _user_id) {
-    checkAuthority(7)
-    if (_user_id == "root") {
-        ErrorOccur
-    }
-    try{
+    checkAuthority(7);
+    try {
         user_tree.find(_user_id);
+        for (auto each_login : user_vector) {
+            if (each_login.user_id == _user_id) {
+                throw ErrorOccur();
+            }
+        }
         user_tree.erase(_user_id);
     }
-    catch (Not_Found){
-        ErrorOccur
+    catch (NotFound) {
+        throw ErrorOccur();
     }
 }
 
 void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
-    checkAuthority(1)
+    checkAuthority(1);
     User l_user;
     try {
         l_user = user_tree.find(_user_id);
-        user_tree.erase(_user_id);
-    } catch (Not_Found) {
-        ErrorOccur
+    } catch (NotFound) {
+        throw ErrorOccur();
     }
-    if (l_user.passwd != _old_passwd) ErrorOccur
+    if (l_user.passwd != _old_passwd) {
+        throw ErrorOccur();
+    }
+    user_tree.erase(_user_id);
     l_user.passwd = _new_passwd;
     user_tree.insert(l_user);
 }
 
 
-
-
 void user::passwdDirect(User_id _user_id, Passwd _new_passwd) {
-    checkAuthority(7)
+    checkAuthority(7);
     User l_user;
     try {
-        User_id l_id = user_stack.top().user_id;
-        l_user = user_tree.find(l_id);
-        user_tree.erase(l_id);
-    } catch (Not_Found) {
-        ErrorOccur
+//        User_id l_id = user_vector.back().user_id;
+        l_user = user_tree.find(_user_id);
+    } catch (NotFound) {
+        throw ErrorOccur();
     }
+    user_tree.erase(_user_id);
     l_user.passwd = _new_passwd;
     user_tree.insert(l_user);
+
 }
 
 
 void book::select(ISBN _isbn) {
-    checkAuthority(3)
+    checkAuthority(3);
     Book l_book;
     try {
         l_book = book_tree.find(_isbn);
-    } catch (Not_Found) {
+    } catch (NotFound) {
         l_book = Book(_isbn);
         book_tree.insert(l_book);
     }
-    user_stack.top().selected_book = _isbn;
+    user_vector.back().selected_book = _isbn;
 }
 
-void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price){
-    checkAuthority(3)
+void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price) {
+    checkAuthority(3);
     FindAndPopSelectedBook
-    if (_isbn != ""){
+    if (_isbn != "") {
         usb = _isbn;
         tbook.isbn = _isbn;
     }
-    if (_book_name != ""){
+    if (_book_name != "") {
         tbook.book_name = _book_name;
     }
-    if (_author != ""){
+    if (_author != "") {
         tbook.author = _author;
     }
-    if (_keyword != ""){
+    if (_keyword != "") {
         tbook.keyword = _keyword;
     }
-    if (_price != -1){
+    if (_price != -1) {
         tbook.price = _price;
     }
     book_tree.insert(tbook);
 
 }
 
-void book::import(Quantity _quantity, Price _price){
-    checkAuthority(3)
+void book::import(Quantity _quantity, Price _price) {
+    checkAuthority(3);
     FindAndPopSelectedBook
     tbook.quantity += _quantity;
     book_tree.insert(tbook);
-    addFinance('-', _price);
+    file::addFinance('-', _price);
 }
 
-void book::show(BookInfoType _infotype, string _info){
-    checkAuthority(1)
+void book::show(BookInfoType _infotype, string _info) {
+    checkAuthority(1);
 
 }
 
-void book::showFinance(){
-    checkAuthority(7)
+void book::showFinance() {
+    checkAuthority(7);
 }
 
-void book::showFinanceTime(Time _time){
-    checkAuthority(7)
+void book::showFinanceTime(Time _time) {
+    checkAuthority(7);
 }
 
-void book::buy(ISBN _isbn, Quantity _quantity){
-    checkAuthority(1)
+void book::buy(ISBN _isbn, Quantity _quantity) {
+    checkAuthority(1);
     FindAndPopSelectedBook
     tbook.quantity -= _quantity;
     book_tree.insert(tbook);
-    addFinance('+', _quantity * tbook.price);
+    file::addFinance('+', _quantity * tbook.price);
 }
 
 
-void sys::reportFinance(){
-    checkAuthority(7)
+void sys::reportFinance() {
+    checkAuthority(7);
 }
 
-void sys::reportEmployee(){
-    checkAuthority(7)
+void sys::reportEmployee() {
+    checkAuthority(7);
 }
 
-void sys::reportMyself(){
-    checkAuthority(3)
+void sys::reportMyself() {
+    checkAuthority(3);
 }
 
-void sys::log(){
-    checkAuthority(7)
-}
-
-
-//---------------------------------------------
-
-void addFinance(char _c,Price _price){
-
+void sys::log() {
+    checkAuthority(7);
 }
 
 
 
-/*
-void book::select(ISBN _isbn) {
-    checkAuthority(3)
-    Book l_book;
-    try {
-        l_book = book_tree.find(_isbn);
-    } catch (Not_Found) {
-        l_book = Book(_isbn);
-        book_tree.insert(l_book);
-    }
-    user_stack.top().selected_book = _isbn;
+void file::addFinance(char _c, Price _price) {
+
 }
 
-void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price){
-    checkAuthority(3)
-    book_tree.find(_isbn);
-}
-
-void book::import(Quantity _quantity, Price _price){
-    checkAuthority(3)
-}
-
-void book::show(BookInfoType _infotype, string _info){
-    checkAuthority(1)
-}
-
-void book::showFinance(){
-    checkAuthority(7)
-}
-
-void book::showFinanceTime(Time _time){
-    checkAuthority(7)
-}
-
-void book::buy(ISBN _isbn, Quantity _quantity){
-    checkAuthority(1)
-}
-
-
-void sys::reportFinance(){
-    checkAuthority(7)
-}
-
-void sys::reportEmployee(){
-    checkAuthority(7)
-}
-
-void sys::reportMyself(){
-    checkAuthority(7)
-}
-
-void sys::log(){
-    checkAuthority(3)
-}*/

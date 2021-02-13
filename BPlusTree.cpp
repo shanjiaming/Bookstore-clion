@@ -10,7 +10,7 @@
 /*template<class T>
 T BPlusTree<T>::find(const StringType &key){
     auto ret = Map.find(key);
-    if (ret == Map.end()) throw Not_Found();
+    if (ret == Map.end()) throw NotFound();
     return *ret.second;
 }
 

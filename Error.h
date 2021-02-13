@@ -5,9 +5,10 @@
 #ifndef SRC_ERROR_H
 #define SRC_ERROR_H
 
-#include <Exception>
+//#include <Exception>
 
-class Not_Found{};
-class No_Authority{};
+class ErrorOccur{};
+class NotFound{};
+class MultipleElement{};
 
 #endif //SRC_ERROR_H
