@@ -101,18 +101,7 @@ vector<CoreUser> user_vector;
 //stack<ISBN> book_stack;
 
 //-------------------------------------------------
-//private Macro
-
-//#define ErrorOccur {\
-//    cout << "Invalid" << endl;\
-//    return;\
-//}
-
-//#define checkAuthority(x) { \
-//    if (user_vector.empty() || user_vector.back().authority < x) {\
-//        ErrorOccur;\
-//    }\
-//}
+//private Macros and functions
 
 void checkAuthority(Authority x) {
     if (user_vector.empty() || user_vector.back().authority < x) {
@@ -194,9 +183,10 @@ namespace sys {
 
 int main() {
 #ifdef debug
-    freopen("D:\\Programming\\BigHomework\\Bookstore\\Bookstore-2021-main\\Data\\BasicDataSet\\testcase3.txt", "r", stdin);
-    freopen("myout.txt", "w", stdout);
+    freopen("../../Data/BasicDataSet/testcase3.txt", "r", stdin);
+    freopen("../myout.txt", "w", stdout);
 #endif
+
     initialize();
     while (true) {
         try {
