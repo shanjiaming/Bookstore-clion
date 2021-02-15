@@ -2,7 +2,7 @@
 #define mainstub
 //--------------------------------------------------
 
-#include "DataClass.h"
+#include "BookAndUser.h"
 
 
 //-------------------------------------------------
@@ -46,7 +46,7 @@ void printBookVector(vector<Book> v_book){//TODO sorted by isbn
     Book tbook = book_data.find(usb);   \
     book_data.erase(usb);
 
-//file functions
+//fileName functions
 
 namespace file {
 
@@ -454,7 +454,7 @@ void book::import(Quantity _quantity, Price _price) {
 
 void book::show(BookInfoType _infotype, StringType _info) {
     checkAuthority(1);
-    printBookVector((_infotype == t_ISBN && _info == "") ? book_data.findVectorAll() : book_data.showType(_infotype, _info));
+    printBookVector((_infotype == t_ISBN && _info == "") ? book_data.findAll() : book_data.showType(_infotype, _info));
 }
 
 void book::showFinance(Time _time) {

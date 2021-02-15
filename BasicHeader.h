@@ -49,6 +49,9 @@ struct Book {
 
     Book(ISBN _isbn) : isbn(_isbn) {}
 
+    bool operator<(const Book &rhs) const {
+        return isbn < rhs.isbn;
+    }
 
 };
 
@@ -69,6 +72,13 @@ struct CoreUser {
                                                                   authority(
                                                                           _authority) {}
 
+    bool operator<(const CoreUser &rhs) const {
+        if (authority < rhs.authority)
+            return true;
+        if (rhs.authority < authority)
+            return false;
+        return user_id < rhs.user_id;
+    }
 };
 
 struct User : CoreUser {
