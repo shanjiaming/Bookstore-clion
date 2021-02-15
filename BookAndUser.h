@@ -15,7 +15,7 @@ public:
     vector<Book> showType(BookInfoType _infotype, string _info) {
         for (auto itype : c_BookInfoTypes) {
             if (_infotype == itype) {
-                return vAdd2vBook(c_bookShowFileMap.at(itype)->findVector(_info));
+                return vAdd2vBook(c_bookShowFileMap.at(itype)->findVector(_info));//TODO debug
             }
         }
     }
@@ -35,12 +35,43 @@ public:
         Address a = book_isbn_tree.find(key);
         Book b = data_book.find(a);
         data_book.erase(a);
-        book_isbn_tree.erase(b.isbn);
-        book_name_tree.erase(b.book_name);
-        book_author_tree.erase(b.author);
+        book_isbn_tree.preciseErase(b.isbn, a);
+        book_name_tree.preciseErase(b.book_name, a);
+        book_author_tree.preciseErase(b.author, a);
         vector<Keyword> keywords = splitKeyword(b.keyword);
         for(Keyword oneword : keywords){
-            book_keyword_tree.erase(oneword);
+            book_keyword_tree.preciseErase(oneword, a);
+        }
+    }
+
+//    void erase(const ISBN &key){
+//        Address a = book_isbn_tree.find(key);
+//        Book b = data_book.find(a);
+//        data_book.erase(a);
+//        book_isbn_tree.erase(b.isbn);
+//        book_name_tree.erase(b.book_name);
+//        book_author_tree.erase(b.author);
+//        vector<Keyword> keywords = splitKeyword(b.keyword);
+//        for(Keyword oneword : keywords){
+//            book_keyword_tree.erase(oneword);
+//        }
+//    }
+
+
+    void change(const ISBN &key, const Book &book){
+        Address a = book_isbn_tree.find(key);
+        Book b = data_book.find(a);
+        data_book.change(a, book);
+        book_isbn_tree.preciseErase(b.isbn, a);
+        book_isbn_tree.insert(book.isbn, a);
+        book_name_tree.preciseErase(b.book_name, a);
+        book_name_tree.insert(book.book_name, a);
+        book_author_tree.preciseErase(b.author, a);
+        book_author_tree.insert(book.author, a);
+        vector<Keyword> keywords = splitKeyword(b.keyword);
+        for(Keyword oneword : keywords){
+            book_keyword_tree.preciseErase(b.keyword, a);
+            book_keyword_tree.insert(book.keyword, a);
         }
     }
 
@@ -52,14 +83,6 @@ public:
         return vAdd2vBook(book_isbn_tree.findAll());
     }
 
-//    vector<Book> findVector(const ISBN &key){
-//        vector<Address> v_address = book_isbn_tree.findVector(key);
-//        vector<Book> v_book;
-//        for (Address a : v_address){
-//            v_book.push_back(data_book.find(a));
-//        }
-//        return v_book;
-//    }
 
 private:
     Data<Book> data_book;
@@ -85,7 +108,6 @@ private:
         for (Address a : v_address){
             v_book.push_back(data_book.find(a));
         }
-        sort(v_book.begin(), v_book.end());
         return v_book;
     }
 };
@@ -119,7 +141,6 @@ private:
         for (Address a : v_address){
             v_user.push_back(data_user.find(a));
         }
-        sort(v_user.begin(), v_user.end());
         return v_user;
     }
 

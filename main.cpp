@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 #define mainstub
 //--------------------------------------------------
 
@@ -9,10 +9,6 @@
 
 UserData user_data;
 BookData book_data;
-
-
-class
-
 
 vector<CoreUser> user_vector;
 #ifdef mainstub
@@ -29,6 +25,7 @@ void checkAuthority(Authority x) {
 }
 
 void printBookVector(vector<Book> v_book){//TODO sorted by isbn
+    sort(v_book.begin(), v_book.end());
     if (v_book.empty()){
         cout << endl;
         return;
@@ -38,11 +35,18 @@ void printBookVector(vector<Book> v_book){//TODO sorted by isbn
     }
 }
 
+#define FindSelectedBook  \
+    if (user_vector.empty() || user_vector.back().selected_book == "") {\
+        throw ErrorOccur();\
+    }                  \
+    cISBN& usb = user_vector.back().selected_book; \
+    Book tbook = book_data.find(usb);                                   \
+
 #define FindAndPopSelectedBook  \
     if (user_vector.empty() || user_vector.back().selected_book == "") {\
         throw ErrorOccur();\
     }                  \
-    ISBN& usb = user_vector.back().selected_book; \
+    cISBN& usb = user_vector.back().selected_book; \
     Book tbook = book_data.find(usb);   \
     book_data.erase(usb);
 
@@ -63,8 +67,6 @@ namespace user {
 
     void su(User_id, Passwd);
 
-    void suDirect(User_id);
-
     void logout();
 
     void useradd(User_id, Passwd, Authority, User_name);
@@ -74,8 +76,6 @@ namespace user {
     void deleteAccount(User_id);
 
     void passwd(User_id, Passwd, Passwd);
-
-    void passwdDirect(User_id, Passwd);
 
 }
 
@@ -110,10 +110,9 @@ namespace sys {
 
 int main() {
 #ifdef debug
-    freopen("../../Data/BasicDataSet/testcase3.txt", "r", stdin);
+    freopen("../../Data/BasicDataSet/testcase4.txt", "r", stdin);
     freopen("../myout.txt", "w", stdout);
 #endif
-
     initialize();
     while (true) {
         try {
@@ -121,7 +120,12 @@ int main() {
         }
         catch (ErrorOccur) {
             cout << "Invalid" << endl;
-        }
+        }/*catch (...) {
+            string next_wrong_line;
+            getline(cin, next_wrong_line);
+            cout << next_wrong_line << endl;
+            exit(1);
+        }*/
     }
     return 0;
 }
@@ -164,10 +168,10 @@ void function_chooser() {
             rule_passwd_direct("^passwd" + user_id + passwd + "$");
     //book
     static const string
-            _ISBN = "(.{1,20})", csISBN = " " + _ISBN, e_ISBN = " -ISBN=" + _ISBN,
-            _book_name = "\"(.{1,60})\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
-            _author = _book_name, author = book_name, e_author = e_book_name,
-            _keyword = "\"([^ ]{1,60})\"", keyword = " " + _keyword, e_keyword = " -keyword=" + _keyword,
+            _ISBN = "([^ ]{1,20})", csISBN = " " + _ISBN, e_ISBN = " -ISBN=" + _ISBN,//TODO ISBN 带空格吗？空白字符之类的要底要限多死？严重关心正则表达式。
+            _book_name = "\"(.{1,60}?)\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
+            _author = "\"(.{1,60}?)\"", author = " " + _author, e_author = " -author=" + _author,
+            _keyword = "\"([^ ]{1,60}?)\"", keyword = " " + _keyword, e_keyword = " -keyword=" + _keyword,
             _price = "(\\d+(?:\\.\\d+)?)", price = " " + _price, e_price = " -price=" + _price,
             cost_price = price,
             quantity = " (\\d+)",
@@ -233,66 +237,69 @@ void function_chooser() {
     }
 
 
-    if (regex_search(input, parameter, rule_select)) {
-        book::select(parameter.str(1));
-        return;
-    }
-    if (regex_search(input, parameter, rule_modify)) {
-        //FIXME: if these value are "" or -1, change won't happen. there include other place like show function
-        ISBN l_ISBN;
-        Book_name l_bookname;
-        Author l_author;
-        Keyword l_keyword;
-        Price l_price = -1;
 
-        if (regex_search(input, parameter, rule_modify_ISBN)) {
-            l_ISBN = parameter.str(1);
-        }
-        if (regex_search(input, parameter, rule_modify_name)) {
-            l_bookname = parameter.str(1);
-        }
-        if (regex_search(input, parameter, rule_modify_author)) {
-            l_author = parameter.str(1);
-        }
-        if (regex_search(input, parameter, rule_modify_keyword)) {
-            l_keyword = parameter.str(1);
-        }
-        if (regex_search(input, parameter, rule_modify_price)) {
-            l_price = stod(parameter.str(1));
-        }
-        book::modify(l_ISBN, l_bookname, l_author, l_keyword, l_price);
-        return;
-    }
-    if (regex_search(input, parameter, rule_import)) {
-        book::import(stoi(parameter.str(1)), stod(parameter.str(2)));
-        return;
-    }
-    if (regex_search(input, parameter, rule_show)) {
-        if (input == "show"){
-            book::show(t_ISBN, "");
+        if (regex_search(input, parameter, rule_select)) {
+            book::select(parameter.str(1));
             return;
         }
-        BookInfoType l_infotype;
-        string l_info;
-        if (regex_search(input, parameter, rule_show_ISBN)) {
-            l_infotype = t_ISBN;
-            l_info = parameter.str(1);
+        if (regex_search(input, parameter, rule_modify)) {
+            //FIXME: if these value are "" or -1, change won't happen. there include other place like show function
+            ISBN l_ISBN;
+            Book_name l_bookname;
+            Author l_author;
+            Keyword l_keyword;
+            Price l_price = 0;
+
+            if (regex_search(input, parameter, rule_modify_ISBN)) {
+                l_ISBN = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_modify_name)) {
+                l_bookname = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_modify_author)) {
+                l_author = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_modify_keyword)) {
+                l_keyword = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_modify_price)) {
+                l_price = stod(parameter.str(1));
+            }
+            book::modify(l_ISBN, l_bookname, l_author, l_keyword, l_price);
+            return;
         }
-        if (regex_search(input, parameter, rule_show_name)) {
-            l_infotype = t_Book_name;
-            l_info = parameter.str(1);
+
+
+        if (regex_search(input, parameter, rule_import)) {
+            book::import(stoi(parameter.str(1)), stod(parameter.str(2)));
+            return;
         }
-        if (regex_search(input, parameter, rule_show_author)) {
-            l_infotype = t_Author;
-            l_info = parameter.str(1);
+        if (regex_search(input, parameter, rule_show)) {
+            if (input == "show") {
+                book::show(t_ISBN, "");
+                return;
+            }
+            BookInfoType l_infotype;
+            string l_info;
+            if (regex_search(input, parameter, rule_show_ISBN)) {
+                l_infotype = t_ISBN;
+                l_info = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_show_name)) {
+                l_infotype = t_Book_name;
+                l_info = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_show_author)) {
+                l_infotype = t_Author;
+                l_info = parameter.str(1);
+            }
+            if (regex_search(input, parameter, rule_show_keyword)) {
+                l_infotype = t_Keyword;
+                l_info = parameter.str(1);
+            }
+            book::show(l_infotype, l_info);
+            return;
         }
-        if (regex_search(input, parameter, rule_show_keyword)) {
-            l_infotype = t_Keyword;
-            l_info = parameter.str(1);
-        }
-        book::show(l_infotype, l_info);
-        return;
-    }
     if (regex_search(input, parameter, rule_show_finance)) {
         book::showFinance(-1);
         return;
@@ -405,7 +412,7 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
         }
     }
     user_data.erase(_user_id);
-    l_user.passwd = _new_passwd;
+    strcpy(l_user.passwd, _new_passwd.c_str());
     user_data.insert(l_user);
 }
 
@@ -418,35 +425,49 @@ void book::select(ISBN _isbn) {
     } catch (NotFound) {
         book_data.insert(Book(_isbn));
     }
-    user_vector.back().selected_book = _isbn;
+    strcpy(user_vector.back().selected_book, _isbn.c_str());
 }
 
 void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price) {
-    checkAuthority(3);
-    FindAndPopSelectedBook
+    checkAuthority(3);//FIXME
+//    FindAndPopSelectedBook
+    if (user_vector.empty() || user_vector.back().selected_book == "") {
+        throw ErrorOccur();
+    }
+    cISBN& usb = user_vector.back().selected_book;
+    Book tbook = book_data.find(usb);
+    book_data.erase(usb);
+
     if (_isbn != "") {
-        usb = _isbn;
-        tbook.isbn = _isbn;
+        strcpy(usb, _isbn.c_str());
+        strcpy(tbook.isbn, _isbn.c_str());
     }
     if (_book_name != "") {
-        tbook.book_name = _book_name;
+        strcpy(tbook.book_name, _book_name.c_str());
     }
     if (_author != "") {
-        tbook.author = _author;
+        strcpy(tbook.author, _author.c_str());
     }
     if (_keyword != "") {
-        tbook.keyword = _keyword;
+        strcpy(tbook.keyword, _keyword.c_str());
     }
-    if (_price != -1) {
+    if (_price != 0) {
         tbook.price = _price;
     }
     book_data.insert(tbook);
-
+//    book_data.change(_isbn, tbook);
 }
 
 void book::import(Quantity _quantity, Price _price) {
     checkAuthority(3);
-    FindAndPopSelectedBook
+//    FindAndPopSelectedBook
+    if (user_vector.empty() || user_vector.back().selected_book == "") {
+        throw ErrorOccur();
+    }
+    cISBN& usb = user_vector.back().selected_book;
+    Book tbook = book_data.find(usb);
+    book_data.erase(usb);
+
     tbook.quantity += _quantity;
     book_data.insert(tbook);
     file::addFinance('-', _price);
@@ -479,7 +500,12 @@ void book::showFinance(Time _time) {
 
 void book::buy(ISBN _isbn, Quantity _quantity) {
     checkAuthority(1);
-    FindAndPopSelectedBook
+//    FindAndPopSelectedBook
+
+
+    Book tbook = book_data.find(_isbn);
+    book_data.erase(_isbn);
+
     tbook.quantity -= _quantity;
     book_data.insert(tbook);
     Price total_price = _quantity * tbook.price;

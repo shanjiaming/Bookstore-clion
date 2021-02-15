@@ -30,79 +30,99 @@ enum BookInfoType {
     t_ISBN, t_Book_name, t_Author, t_Keyword
 };
 const vector<BookInfoType> c_BookInfoTypes{t_ISBN, t_Book_name, t_Author, t_Keyword};
+
 typedef string StringType;
 typedef StringType ISBN, Book_name, Author, Keyword;
+typedef char cISBN[21], cBook_name[61], cAuthor[61], cKeyword[61];
 typedef double Price;
 typedef int Quantity;
 
 struct Book {
-    ISBN isbn;
-    Book_name book_name;
-    Author author;
-    Keyword keyword;
-    Price price = -1;
-    Quantity quantity = 0;
-
-    ISBN key() const { return isbn; }
+    cISBN isbn;
+    cBook_name book_name;
+    cAuthor author;
+    cKeyword keyword;
+    Price price;
+    Quantity quantity;
 
     Book() = default;
 
-    Book(ISBN _isbn) : isbn(_isbn) {}
+//    Book(cISBN _isbn) { strcpy(isbn, _isbn); price = 0; quantity = 0; strcpy(book_name,""); strcpy(author,""); strcpy(keyword,"");}
+    Book(ISBN _isbn, cBook_name _book_name = "",
+         cAuthor _author = "",
+         cKeyword _keyword = "",
+         Price _price = 0,
+         Quantity _quantity = 0) {
+        strcpy(isbn, _isbn.c_str());
+        strcpy(book_name, _book_name);
+        strcpy(author, _author);
+        strcpy(keyword, _keyword);
+        price = _price;
+        quantity = _quantity;
+    }
 
     bool operator<(const Book &rhs) const {
-        return isbn < rhs.isbn;
+        return strcmp(isbn, rhs.isbn) < 0;
     }
 
 };
 
 
+typedef char cUser_id[31], cPasswd[31], cUser_name[31];
 typedef StringType User_id, Passwd, User_name;
 typedef int Authority;
 
 struct CoreUser {
-    User_id user_id;
+    cUser_id user_id;
     Authority authority;
-    ISBN selected_book;
-
-    User_id key() const { return user_id; }
+    cISBN selected_book;
 
     CoreUser() = default;
 
-    CoreUser(const User_id &_user_id, Authority _authority = 0) : user_id(_user_id),
-                                                                  authority(
-                                                                          _authority) {}
+//    CoreUser(const cUser_id &_user_id, Authority _authority = 0) : authority(_authority) { strcpy(user_id, _user_id); strcpy(selected_book,"");}
+    CoreUser(const User_id &_user_id, Authority _authority = 0, ISBN _selected_book = "") : authority(_authority) {
+        strcpy(user_id, _user_id.c_str());
+        strcpy(selected_book, _selected_book.c_str());
+    }
 
     bool operator<(const CoreUser &rhs) const {
         if (authority < rhs.authority)
             return true;
         if (rhs.authority < authority)
             return false;
-        return user_id < rhs.user_id;
+        return strcmp(user_id, rhs.user_id) < 0;
     }
 };
 
 struct User : CoreUser {
-    Passwd passwd;
-    User_name user_name;
+    cPasswd passwd;
+    cUser_name user_name;
 
     User() = default;
 
+//    User(const cUser_id &_user_id, const cPasswd &_passwd, const cUser_name &_user_name, Authority _authority = 0)
+//            : CoreUser(_user_id, _authority) {
+//        strcpy(user_name, _user_name);
+//        strcpy(passwd, _passwd);
+//    }
     User(const User_id &_user_id, const Passwd &_passwd, const User_name &_user_name, Authority _authority = 0)
-            : CoreUser(_user_id, _authority),
-              user_name(
-                      _user_name),
-              passwd(
-                      _passwd) {}
+            : CoreUser(_user_id, _authority) {
+        strcpy(user_name, _user_name.c_str());
+        strcpy(passwd, _passwd.c_str());
+    }
 };
 
 typedef char Sign;
-struct Finance{
+
+struct Finance {
     Finance(Sign sign, Price price) : sign(sign), price(price) {}
+
     Sign sign;
     Price price;
 
 };
 
 typedef int Time;
+
 
 #endif //CODE_BASICHEADER_H

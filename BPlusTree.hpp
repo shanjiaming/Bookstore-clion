@@ -63,6 +63,22 @@ private:
         Map.erase(key);
     }
 
+    void preciseErase(const TKey &key, const TValue &o){
+        int i = Map.count(key);
+        auto it = Map.find(key);
+        while(i--){
+            if (it->second == o){
+                auto itassert = ++it;
+                --it;
+                assert(itassert->first != key || itassert->second != o);
+                Map.erase(it);
+                return;
+            }
+            ++it;
+        }
+        assert(false);
+    }
+
     vector<TValue> findVector(const TKey &key) const{
         vector<TValue> v;
         int i = Map.count(key);
@@ -76,6 +92,10 @@ private:
     vector<TValue> findAll() const{
         vector<TValue> v;
         //TODO
+        for (auto i:Map){
+            v.push_back(i.second);
+        }
+        return v;
     }
 
 #ifdef treedebug
