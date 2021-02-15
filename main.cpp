@@ -1,104 +1,23 @@
-#define debug
+//#define debug
+#define mainstub
 //--------------------------------------------------
 
-#include <regex>
-#include <cstring>
-#include <string>
-#include <set>
-#include <unordered_map>
-#include <cmath>
-#include <cstdio>
-#include <iostream>
-#include <vector>
-#include <stack>
-#include <cassert>
-#include <sstream>
-#include <utility>
-#include <tuple>
-#include <algorithm>
-#include <unordered_map>
-#include "BPlusTree.h"
-
-using namespace std;
-
-//--------------------------------------------------
-
-enum BookInfoType {
-    t_ISBN, t_Book_name, t_Author, t_Keyword
-};
-const vector<BookInfoType> c_BookInfoTypes{t_ISBN, t_Book_name, t_Author, t_Keyword};
-typedef StringType ISBN, Book_name, Author, Keyword;
-typedef double Price;
-typedef int Quantity;
-
-struct Book {
-    ISBN isbn;
-    Book_name book_name;
-    Author author;
-    Keyword keyword;
-    Price price = -1;
-    Quantity quantity = 0;
-
-    ISBN key() const { return isbn; }
-
-    Book() = default;
-
-    Book(ISBN _isbn) : isbn(_isbn) {}
-
-
-};
-
-
-typedef int Time;
-
-
-typedef StringType User_id, Passwd, User_name;
-typedef int Authority;
-
-struct CoreUser {
-    User_id user_id;
-    Authority authority;
-    ISBN selected_book;
-
-    User_id key() const { return user_id; }
-
-    CoreUser() = default;
-
-    CoreUser(const User_id &_user_id, Authority _authority = 0) : user_id(_user_id),
-                                                                  authority(
-                                                                          _authority) {}
-
-};
-
-struct User : CoreUser {
-    Passwd passwd;
-    User_name user_name;
-
-    User() = default;
-
-    User(const User_id &_user_id, const Passwd &_passwd, const User_name &_user_name, Authority _authority = 0)
-            : CoreUser(_user_id, _authority),
-              user_name(
-                      _user_name),
-              passwd(
-                      _passwd) {}
-};
-
-
+#include "DataClass.h"
 
 
 //-------------------------------------------------
 
-BPlusTree<User> user_tree("");
-BPlusTree<Book> book_tree("");
-const map<BookInfoType, FileName> c_bookShowFileMap{{t_ISBN,      ""},
-                                                    {t_Book_name, ""},
-                                                    {t_Author,    ""},
-                                                    {t_Keyword,   ""}};
+UserData user_data;
+BookData book_data;
+
+
+class
 
 
 vector<CoreUser> user_vector;
-//stack<ISBN> book_stack;
+#ifdef mainstub
+vector<Finance> finance_vector;//TODO 抽象为文件结构
+#endif
 
 //-------------------------------------------------
 //private Macros and functions
@@ -109,19 +28,29 @@ void checkAuthority(Authority x) {
     }
 }
 
+void printBookVector(vector<Book> v_book){//TODO sorted by isbn
+    if (v_book.empty()){
+        cout << endl;
+        return;
+    }
+    for (Book i : v_book){
+        cout << i.isbn << '\t' << i.book_name << '\t' << i.author << '\t' << i.keyword << '\t' << i.price << '\t' << i.quantity << endl;
+    }
+}
+
 #define FindAndPopSelectedBook  \
     if (user_vector.empty() || user_vector.back().selected_book == "") {\
         throw ErrorOccur();\
     }                  \
     ISBN& usb = user_vector.back().selected_book; \
-    Book tbook = book_tree.find(usb);   \
-    book_tree.erase(usb);
+    Book tbook = book_data.find(usb);   \
+    book_data.erase(usb);
 
 //file functions
 
 namespace file {
 
-    void addFinance(char, Price);
+    void addFinance(Sign, Price);
 
 }
 //-------------------------------------------------
@@ -160,9 +89,7 @@ namespace book {
 
     void show(BookInfoType, string);
 
-    void showFinance();
-
-    void showFinanceTime(Time);
+    void showFinance(Time);
 
     void buy(ISBN, Quantity);
 
@@ -206,8 +133,9 @@ void initialize() {
     auto openMark = []() {
         //TODO
     };
+    cout << fixed << setprecision(2);
     if (firstOpen()) {
-        user_tree.insert(User("root", "sjtu", "root", 7));
+        user_data.insert(User("root", "sjtu", "root", 7));
         //TODO
         openMark();
     }
@@ -276,7 +204,7 @@ void function_chooser() {
         return;
     }
     if (regex_search(input, parameter, rule_su_direct)) {
-        user::suDirect(parameter.str(1));
+        user::su(parameter.str(1), "");
         return;
     }
     if (regex_search(input, parameter, rule_logout)) {
@@ -300,7 +228,7 @@ void function_chooser() {
         return;
     }
     if (regex_search(input, parameter, rule_passwd_direct)) {
-        user::passwdDirect(parameter.str(1), parameter.str(2));
+        user::passwd(parameter.str(1), "", parameter.str(2));
         return;
     }
 
@@ -340,36 +268,37 @@ void function_chooser() {
         return;
     }
     if (regex_search(input, parameter, rule_show)) {
+        if (input == "show"){
+            book::show(t_ISBN, "");
+            return;
+        }
         BookInfoType l_infotype;
         string l_info;
         if (regex_search(input, parameter, rule_show_ISBN)) {
             l_infotype = t_ISBN;
             l_info = parameter.str(1);
-            return;
         }
         if (regex_search(input, parameter, rule_show_name)) {
             l_infotype = t_Book_name;
             l_info = parameter.str(1);
-            return;
         }
         if (regex_search(input, parameter, rule_show_author)) {
             l_infotype = t_Author;
             l_info = parameter.str(1);
-            return;
         }
         if (regex_search(input, parameter, rule_show_keyword)) {
             l_infotype = t_Keyword;
             l_info = parameter.str(1);
-            return;
         }
         book::show(l_infotype, l_info);
+        return;
     }
     if (regex_search(input, parameter, rule_show_finance)) {
-        book::showFinance();
+        book::showFinance(-1);
         return;
     }
     if (regex_search(input, parameter, rule_show_finance_time)) {
-        book::showFinanceTime(stoi(parameter.str(1)));
+        book::showFinance(stoi(parameter.str(1)));
         return;
     }
     if (regex_search(input, parameter, rule_buy)) {
@@ -410,24 +339,17 @@ void function_chooser() {
 void user::su(User_id _user_id, Passwd _passwd) {
     User l_user;
     try {
-        l_user = user_tree.find(_user_id);
+        l_user = user_data.find(_user_id);
     } catch (NotFound) {
         throw ErrorOccur();
     }
-    if (l_user.passwd != _passwd) {
-        throw ErrorOccur();
+    if (_passwd == "") {
+        checkAuthority(l_user.authority * 2 + 1);
+    } else {
+        if (l_user.passwd != _passwd) {
+            throw ErrorOccur();
+        }
     }
-    user_vector.push_back(l_user);
-}
-
-void user::suDirect(User_id _user_id) {
-    User l_user;
-    try {
-        l_user = user_tree.find(_user_id);
-    } catch (NotFound) {
-        throw ErrorOccur();
-    }
-    checkAuthority(l_user.authority * 2 + 1);
     user_vector.push_back(l_user);
 }
 
@@ -439,28 +361,28 @@ void user::logout() {
 void user::useradd(User_id _user_id, Passwd _passwd, Authority _authority, User_name _user_name) {
     checkAuthority(_authority * 2 + 1);
     try {
-        user_tree.find(_user_id);
+        user_data.find(_user_id);
         throw ErrorOccur();
     }
     catch (NotFound) {
-        user_tree.insert(User(_user_id, _passwd, _user_name, _authority));
+        user_data.insert(User(_user_id, _passwd, _user_name, _authority));
     }
 }
 
 void user::registerAccount(User_id _user_id, Passwd _passwd, User_name _user_name) {
-    user_tree.insert(User(_user_id, _passwd, _user_name, 1));
+    user_data.insert(User(_user_id, _passwd, _user_name, 1));
 }
 
 void user::deleteAccount(User_id _user_id) {
     checkAuthority(7);
     try {
-        user_tree.find(_user_id);
+        user_data.find(_user_id);
         for (auto each_login : user_vector) {
             if (each_login.user_id == _user_id) {
                 throw ErrorOccur();
             }
         }
-        user_tree.erase(_user_id);
+        user_data.erase(_user_id);
     }
     catch (NotFound) {
         throw ErrorOccur();
@@ -468,46 +390,33 @@ void user::deleteAccount(User_id _user_id) {
 }
 
 void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
-    checkAuthority(1);
     User l_user;
     try {
-        l_user = user_tree.find(_user_id);
+        l_user = user_data.find(_user_id);
     } catch (NotFound) {
         throw ErrorOccur();
     }
-    if (l_user.passwd != _old_passwd) {
-        throw ErrorOccur();
+    if (_old_passwd == ""){
+        checkAuthority(7);
+    }else {
+        checkAuthority(1);
+        if (l_user.passwd != _old_passwd) {
+            throw ErrorOccur();
+        }
     }
-    user_tree.erase(_user_id);
+    user_data.erase(_user_id);
     l_user.passwd = _new_passwd;
-    user_tree.insert(l_user);
+    user_data.insert(l_user);
 }
 
-
-void user::passwdDirect(User_id _user_id, Passwd _new_passwd) {
-    checkAuthority(7);
-    User l_user;
-    try {
-//        User_id l_id = user_vector.back().user_id;
-        l_user = user_tree.find(_user_id);
-    } catch (NotFound) {
-        throw ErrorOccur();
-    }
-    user_tree.erase(_user_id);
-    l_user.passwd = _new_passwd;
-    user_tree.insert(l_user);
-
-}
 
 
 void book::select(ISBN _isbn) {
     checkAuthority(3);
-    Book l_book;
     try {
-        l_book = book_tree.find(_isbn);
+        book_data.find(_isbn);
     } catch (NotFound) {
-        l_book = Book(_isbn);
-        book_tree.insert(l_book);
+        book_data.insert(Book(_isbn));
     }
     user_vector.back().selected_book = _isbn;
 }
@@ -531,7 +440,7 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     if (_price != -1) {
         tbook.price = _price;
     }
-    book_tree.insert(tbook);
+    book_data.insert(tbook);
 
 }
 
@@ -539,29 +448,43 @@ void book::import(Quantity _quantity, Price _price) {
     checkAuthority(3);
     FindAndPopSelectedBook
     tbook.quantity += _quantity;
-    book_tree.insert(tbook);
+    book_data.insert(tbook);
     file::addFinance('-', _price);
 }
 
-void book::show(BookInfoType _infotype, string _info) {
+void book::show(BookInfoType _infotype, StringType _info) {
     checkAuthority(1);
-
+    printBookVector((_infotype == t_ISBN && _info == "") ? book_data.findVectorAll() : book_data.showType(_infotype, _info));
 }
 
-void book::showFinance() {
+void book::showFinance(Time _time) {
     checkAuthority(7);
+    Price plus = 0, minus = 0;
+    if (_time == -1) {
+        for (auto i : finance_vector) {
+            ((i.sign == '+') ? plus : minus) += i.price;
+        }
+    } else {
+        if (_time > finance_vector.size()){
+            throw ErrorOccur();
+        }
+        Time t = _time;
+        for (auto i = finance_vector.rbegin(); t--; ++i) {
+            ((i->sign == '+') ? plus : minus) += i->price;
+        }
+    }
+    cout << "+" << plus << "-" << minus << endl;
 }
 
-void book::showFinanceTime(Time _time) {
-    checkAuthority(7);
-}
 
 void book::buy(ISBN _isbn, Quantity _quantity) {
     checkAuthority(1);
     FindAndPopSelectedBook
     tbook.quantity -= _quantity;
-    book_tree.insert(tbook);
-    file::addFinance('+', _quantity * tbook.price);
+    book_data.insert(tbook);
+    Price total_price = _quantity * tbook.price;
+    file::addFinance('+', total_price);
+    cout << total_price << endl;
 }
 
 
@@ -583,7 +506,7 @@ void sys::log() {
 
 
 
-void file::addFinance(char _c, Price _price) {
-
+void file::addFinance(Sign _c, Price _price) {
+    finance_vector.push_back(Finance(_c, _price));
 }
 
