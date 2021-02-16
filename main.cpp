@@ -1,4 +1,4 @@
-#define debug
+//#define debug
 #define mainstub
 //--------------------------------------------------
 
@@ -24,14 +24,15 @@ void checkAuthority(Authority x) {
     }
 }
 
-void printBookVector(vector<Book> v_book){//TODO sorted by isbn
+void printBookVector(vector<Book> v_book) {//TODO sorted by isbn
     sort(v_book.begin(), v_book.end());
-    if (v_book.empty()){
+    if (v_book.empty()) {
         cout << endl;
         return;
     }
-    for (Book i : v_book){
-        cout << i.isbn << '\t' << i.book_name << '\t' << i.author << '\t' << i.keyword << '\t' << i.price << '\t' << i.quantity << endl;
+    for (Book i : v_book) {
+        cout << i.isbn << '\t' << i.book_name << '\t' << i.author << '\t' << i.keyword << '\t' << i.price << '\t'
+             << i.quantity << endl;
     }
 }
 
@@ -110,7 +111,7 @@ namespace sys {
 
 int main() {
 #ifdef debug
-    freopen("../../Data/BasicDataSet/testcase4.txt", "r", stdin);
+    freopen("../../Data/AdvancedDataSet/testcase4/1.in", "r", stdin);
     freopen("../myout.txt", "w", stdout);
 #endif
     initialize();
@@ -168,8 +169,9 @@ void function_chooser() {
             rule_passwd_direct("^passwd" + user_id + passwd + "$");
     //book
     static const string
-            _ISBN = "([^ ]{1,20})", csISBN = " " + _ISBN, e_ISBN = " -ISBN=" + _ISBN,//TODO ISBN 带空格吗？空白字符之类的要底要限多死？严重关心正则表达式。
-            _book_name = "\"(.{1,60}?)\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
+            _ISBN = "([^ ]{1,20})", csISBN = " " + _ISBN, e_ISBN =
+            " -ISBN=" + _ISBN,//TODO ISBN 带空格吗？空白字符之类的要底要限多死？严重关心正则表达式。
+    _book_name = "\"(.{1,60}?)\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
             _author = "\"(.{1,60}?)\"", author = " " + _author, e_author = " -author=" + _author,
             _keyword = "\"([^ ]{1,60}?)\"", keyword = " " + _keyword, e_keyword = " -keyword=" + _keyword,
             _price = "(\\d+(?:\\.\\d+)?)", price = " " + _price, e_price = " -price=" + _price,
@@ -202,6 +204,7 @@ void function_chooser() {
             rule_quit("^quit$");
 
     getline(cin, input);
+    input.erase(input.find_last_not_of(" ") + 1);
 
     if (regex_search(input, parameter, rule_su)) {
         user::su(parameter.str(1), parameter.str(2));
@@ -237,69 +240,37 @@ void function_chooser() {
     }
 
 
+    if (regex_search(input, parameter, rule_select)) {
+        book::select(parameter.str(1));
+        return;
+    }
+    if (regex_search(input, parameter, rule_modify)) {
+        //FIXME: if these value are "" or -1, change won't happen. there include other place like show function
+        ISBN l_ISBN;
+        Book_name l_bookname;
+        Author l_author;
+        Keyword l_keyword;
+        Price l_price = 0;
 
-        if (regex_search(input, parameter, rule_select)) {
-            book::select(parameter.str(1));
-            return;
+        if (regex_search(input, parameter, rule_modify_ISBN)) {
+            l_ISBN = parameter.str(1);
         }
-        if (regex_search(input, parameter, rule_modify)) {
-            //FIXME: if these value are "" or -1, change won't happen. there include other place like show function
-            ISBN l_ISBN;
-            Book_name l_bookname;
-            Author l_author;
-            Keyword l_keyword;
-            Price l_price = 0;
+        if (regex_search(input, parameter, rule_modify_name)) {
+            l_bookname = parameter.str(1);
+        }
+        if (regex_search(input, parameter, rule_modify_author)) {
+            l_author = parameter.str(1);
+        }
+        if (regex_search(input, parameter, rule_modify_keyword)) {
+            l_keyword = parameter.str(1);
+        }
+        if (regex_search(input, parameter, rule_modify_price)) {
+            l_price = stod(parameter.str(1));
+        }
+        book::modify(l_ISBN, l_bookname, l_author, l_keyword, l_price);
+        return;
+    }
 
-            if (regex_search(input, parameter, rule_modify_ISBN)) {
-                l_ISBN = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_modify_name)) {
-                l_bookname = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_modify_author)) {
-                l_author = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_modify_keyword)) {
-                l_keyword = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_modify_price)) {
-                l_price = stod(parameter.str(1));
-            }
-            book::modify(l_ISBN, l_bookname, l_author, l_keyword, l_price);
-            return;
-        }
-
-
-        if (regex_search(input, parameter, rule_import)) {
-            book::import(stoi(parameter.str(1)), stod(parameter.str(2)));
-            return;
-        }
-        if (regex_search(input, parameter, rule_show)) {
-            if (input == "show") {
-                book::show(t_ISBN, "");
-                return;
-            }
-            BookInfoType l_infotype;
-            string l_info;
-            if (regex_search(input, parameter, rule_show_ISBN)) {
-                l_infotype = t_ISBN;
-                l_info = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_show_name)) {
-                l_infotype = t_Book_name;
-                l_info = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_show_author)) {
-                l_infotype = t_Author;
-                l_info = parameter.str(1);
-            }
-            if (regex_search(input, parameter, rule_show_keyword)) {
-                l_infotype = t_Keyword;
-                l_info = parameter.str(1);
-            }
-            book::show(l_infotype, l_info);
-            return;
-        }
     if (regex_search(input, parameter, rule_show_finance)) {
         book::showFinance(-1);
         return;
@@ -308,6 +279,37 @@ void function_chooser() {
         book::showFinance(stoi(parameter.str(1)));
         return;
     }
+    if (regex_search(input, parameter, rule_import)) {
+        book::import(stoi(parameter.str(1)), stod(parameter.str(2)));
+        return;
+    }
+    if (regex_search(input, parameter, rule_show)) {
+        if (input == "show") {
+            book::show(t_ISBN, "");
+            return;
+        }
+        BookInfoType l_infotype;
+        string l_info;
+        if (regex_search(input, parameter, rule_show_ISBN)) {
+            l_infotype = t_ISBN;
+            l_info = parameter.str(1);
+        }
+        if (regex_search(input, parameter, rule_show_name)) {
+            l_infotype = t_Book_name;
+            l_info = parameter.str(1);
+        }
+        if (regex_search(input, parameter, rule_show_author)) {
+            l_infotype = t_Author;
+            l_info = parameter.str(1);
+        }
+        if (regex_search(input, parameter, rule_show_keyword)) {
+            l_infotype = t_Keyword;
+            l_info = parameter.str(1);
+        }
+        book::show(l_infotype, l_info);
+        return;
+    }
+
     if (regex_search(input, parameter, rule_buy)) {
         book::buy(parameter.str(1), stoi(parameter.str(2)));
         return;
@@ -336,7 +338,7 @@ void function_chooser() {
     if (regex_search(input, parameter, rule_quit)) {
         exit(0);
     }
-    if (cin.eof()){
+    if (cin.eof()) {
         exit(0);
     }
     throw ErrorOccur();
@@ -403,9 +405,9 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
     } catch (NotFound) {
         throw ErrorOccur();
     }
-    if (_old_passwd == ""){
+    if (_old_passwd == "") {
         checkAuthority(7);
-    }else {
+    } else {
         checkAuthority(1);
         if (l_user.passwd != _old_passwd) {
             throw ErrorOccur();
@@ -415,7 +417,6 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
     strcpy(l_user.passwd, _new_passwd.c_str());
     user_data.insert(l_user);
 }
-
 
 
 void book::select(ISBN _isbn) {
@@ -431,10 +432,16 @@ void book::select(ISBN _isbn) {
 void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price) {
     checkAuthority(3);//FIXME
 //    FindAndPopSelectedBook
-    if (user_vector.empty() || user_vector.back().selected_book == "") {
+    if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
         throw ErrorOccur();
     }
-    cISBN& usb = user_vector.back().selected_book;
+    if (_isbn != "") {
+        try {
+            book_data.find(_isbn);
+            throw ErrorOccur();
+        } catch (NotFound) {}
+    }
+    cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
     book_data.erase(usb);
 
@@ -461,10 +468,10 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
 void book::import(Quantity _quantity, Price _price) {
     checkAuthority(3);
 //    FindAndPopSelectedBook
-    if (user_vector.empty() || user_vector.back().selected_book == "") {
+    if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
         throw ErrorOccur();
     }
-    cISBN& usb = user_vector.back().selected_book;
+    cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
     book_data.erase(usb);
 
@@ -486,7 +493,7 @@ void book::showFinance(Time _time) {
             ((i.sign == '+') ? plus : minus) += i.price;
         }
     } else {
-        if (_time > finance_vector.size()){
+        if (_time > finance_vector.size()) {
             throw ErrorOccur();
         }
         Time t = _time;
@@ -502,8 +509,13 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
     checkAuthority(1);
 //    FindAndPopSelectedBook
 
-
+    try{
+        book_data.find(_isbn);
+    }catch(NotFound) {
+        throw ErrorOccur();
+    }
     Book tbook = book_data.find(_isbn);
+    if (tbook.quantity < _quantity) throw ErrorOccur();
     book_data.erase(_isbn);
 
     tbook.quantity -= _quantity;
@@ -529,7 +541,6 @@ void sys::reportMyself() {
 void sys::log() {
     checkAuthority(7);
 }
-
 
 
 void file::addFinance(Sign _c, Price _price) {

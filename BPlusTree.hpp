@@ -14,6 +14,7 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
+#include <memory.h>
 #include "Error.h"
 using namespace std;
 
@@ -21,6 +22,7 @@ using namespace std;
 //------------------------------------
 
 typedef string FileName;
+typedef long Address;
 
 template <class TKey ,class TValue>
 class BPlusTree {
@@ -37,8 +39,43 @@ public:
 
 private:
 
-    static const int M=100, L=100;
+    static const int R=100, B=100, T=50;
 
+    class Root {
+    private:
+        Address bas[R];
+    public:
+        Root(){
+            memset(bas, -1, sizeof(bas) * R);
+        }
+
+    };
+
+    class Block{
+    private:
+        Address sas[B];
+    public:
+        Block(){
+            memset(sas, -1, sizeof(sas) * R);
+        }
+        void write(size_t x, writethings){
+
+        }
+    };
+
+    class Element{
+    private:
+
+    public
+
+    };
+
+    class Pool{
+        private:
+
+    public:
+
+    };
 
 
 
@@ -59,9 +96,9 @@ private:
         Map.insert(make_pair(key, o));
     }
 
-    void erase(const TKey &key){
-        Map.erase(key);
-    }
+//    void erase(const TKey &key){
+//        Map.erase(key);
+//    }
 
     void preciseErase(const TKey &key, const TValue &o){
         int i = Map.count(key);

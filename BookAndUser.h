@@ -59,20 +59,22 @@ public:
 
 
     void change(const ISBN &key, const Book &book){
-        Address a = book_isbn_tree.find(key);
-        Book b = data_book.find(a);
-        data_book.change(a, book);
-        book_isbn_tree.preciseErase(b.isbn, a);
-        book_isbn_tree.insert(book.isbn, a);
-        book_name_tree.preciseErase(b.book_name, a);
-        book_name_tree.insert(book.book_name, a);
-        book_author_tree.preciseErase(b.author, a);
-        book_author_tree.insert(book.author, a);
-        vector<Keyword> keywords = splitKeyword(b.keyword);
-        for(Keyword oneword : keywords){
-            book_keyword_tree.preciseErase(b.keyword, a);
-            book_keyword_tree.insert(book.keyword, a);
-        }
+//        Address a = book_isbn_tree.find(key);
+//        Book b = data_book.find(a);
+//        data_book.change(a, book);
+//        book_isbn_tree.preciseErase(b.isbn, a);
+//        book_isbn_tree.insert(book.isbn, a);
+//        book_name_tree.preciseErase(b.book_name, a);
+//        book_name_tree.insert(book.book_name, a);
+//        book_author_tree.preciseErase(b.author, a);
+//        book_author_tree.insert(book.author, a);
+//        vector<Keyword> keywords = splitKeyword(b.keyword);
+//        for(Keyword oneword : keywords){
+//            book_keyword_tree.preciseErase(b.keyword, a);
+//            book_keyword_tree.insert(book.keyword, a);
+//        }
+        erase(key);
+        insert(book);
     }
 
     Book find(const ISBN &key){
@@ -122,7 +124,7 @@ public:
 
     void erase(const User_id &key){
         data_user.erase(user_id_tree.find(key));
-        user_id_tree.erase(key);
+        user_id_tree.preciseErase(key, user_id_tree.find(key));
     }
 
     User find(const User_id &key){
