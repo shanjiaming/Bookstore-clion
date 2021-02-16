@@ -1,9 +1,10 @@
-#define debug
-#define mainstub
+//#define debug
+//#define mainstub
 //--------------------------------------------------
 
 #include "BookAndUser.h"
-
+#include "logger.h"
+class ErrorOccur{};
 
 //-------------------------------------------------
 
@@ -13,13 +14,25 @@ BookData book_data;
 vector<CoreUser> user_vector;
 #ifdef mainstub
 vector<Finance> finance_vector;//TODO 抽象为文件结构
+#else
+fstream finance_file("finance.dat", ios::app);
+fstream operation_file("operation.dat", ios::app);
+//TODO 很简单的顺序文件，明天再写
 #endif
 
 //-------------------------------------------------
 //private Macros and functions
 
+
+
 void checkAuthority(Authority x) {
-    if (user_vector.empty() || user_vector.back().authority < x) {
+    USER;
+    if (user_vector.empty()) {
+        Error("NO USER LOGIN YET");
+        throw ErrorOccur();
+    }
+    if (user_vector.back().authority < x) {
+        Error("NO AUTHORITY");
         throw ErrorOccur();
     }
 }
@@ -121,12 +134,7 @@ int main() {
         }
         catch (ErrorOccur) {
             cout << "Invalid" << endl;
-        }/*catch (...) {
-            string next_wrong_line;
-            getline(cin, next_wrong_line);
-            cout << next_wrong_line << endl;
-            exit(1);
-        }*/
+        }
     }
     return 0;
 }
@@ -145,6 +153,7 @@ void initialize() {
         openMark();
     }
     //TODO?
+    Success;
 }
 
 void function_chooser() {
@@ -205,6 +214,9 @@ void function_chooser() {
 
     getline(cin, input);
     input.erase(input.find_last_not_of(" ") + 1);
+
+//    USER;
+    Info("try to " + input);
 
     if (regex_search(input, parameter, rule_su)) {
         user::su(parameter.str(1), parameter.str(2));
@@ -341,6 +353,7 @@ void function_chooser() {
     if (cin.eof()) {
         exit(0);
     }
+    Error("SYNTAX ERROR");
     throw ErrorOccur();
 }
 
@@ -350,36 +363,44 @@ void user::su(User_id _user_id, Passwd _passwd) {
     try {
         l_user = user_data.find(_user_id);
     } catch (NotFound) {
+        Error("NO THIS USER");
         throw ErrorOccur();
     }
     if (_passwd == "") {
         checkAuthority(l_user.authority * 2 + 1);
     } else {
         if (l_user.passwd != _passwd) {
+            Error("WRONG PASSWD");
             throw ErrorOccur();
         }
     }
     user_vector.push_back(l_user);
+    Success;
 }
 
 void user::logout() {
     checkAuthority(1);
     user_vector.pop_back();
+    Success;
 }
 
 void user::useradd(User_id _user_id, Passwd _passwd, Authority _authority, User_name _user_name) {
+
     checkAuthority(_authority * 2 + 1);
     try {
         user_data.find(_user_id);
+        Error("ALREADY EXISTS");
         throw ErrorOccur();
     }
     catch (NotFound) {
         user_data.insert(User(_user_id, _passwd, _user_name, _authority));
     }
+    Success;
 }
 
 void user::registerAccount(User_id _user_id, Passwd _passwd, User_name _user_name) {
     user_data.insert(User(_user_id, _passwd, _user_name, 1));
+    Success;
 }
 
 void user::deleteAccount(User_id _user_id) {
@@ -388,14 +409,17 @@ void user::deleteAccount(User_id _user_id) {
         user_data.find(_user_id);
         for (auto each_login : user_vector) {
             if (each_login.user_id == _user_id) {
+                Error("THIS USER HAS ALREADY LOGIN");
                 throw ErrorOccur();
             }
         }
         user_data.erase(_user_id);
     }
     catch (NotFound) {
+        Error("NO THIS USER");
         throw ErrorOccur();
     }
+    Success;
 }
 
 void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
@@ -403,6 +427,7 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
     try {
         l_user = user_data.find(_user_id);
     } catch (NotFound) {
+        Error("NO THIS USER");
         throw ErrorOccur();
     }
     if (_old_passwd == "") {
@@ -410,12 +435,14 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
     } else {
         checkAuthority(1);
         if (l_user.passwd != _old_passwd) {
+            Error("WRONG PASSWORD");
             throw ErrorOccur();
         }
     }
     user_data.erase(_user_id);
     strcpy(l_user.passwd, _new_passwd.c_str());
     user_data.insert(l_user);
+    Success;
 }
 
 
@@ -427,17 +454,21 @@ void book::select(ISBN _isbn) {
         book_data.insert(Book(_isbn));
     }
     strcpy(user_vector.back().selected_book, _isbn.c_str());
+    Success;
 }
 
 void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price) {
+    BOOK;
     checkAuthority(3);//FIXME
 //    FindAndPopSelectedBook
     if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
+        Error("NO SELECTED BOOK");
         throw ErrorOccur();
     }
     if (_isbn != "") {
         try {
             book_data.find(_isbn);
+            Error("NO BOOK WITH THIS ISBN");
             throw ErrorOccur();
         } catch (NotFound) {}
     }
@@ -463,12 +494,15 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     }
 //    book_data.insert(tbook);
     book_data.change(usb, tbook);
+    Success;
 }
 
 void book::import(Quantity _quantity, Price _price) {
+    BOOK;
     checkAuthority(3);
 //    FindAndPopSelectedBook
     if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
+        Error("NO SELECTED BOOK");
         throw ErrorOccur();
     }
     cISBN &usb = user_vector.back().selected_book;
@@ -479,14 +513,19 @@ void book::import(Quantity _quantity, Price _price) {
 //    book_data.insert(tbook);
     book_data.change(usb, tbook);
     file::addFinance('-', _price);
+    Success;
+    FCUT;
+    FUSER;
+    FInfo("  BookISBN=" << usb << "  Quantity=" << _quantity << "  Cost Per Book=" << double(_price)/_quantity << "  Total Cost=" << _price);
 }
 
 void book::show(BookInfoType _infotype, StringType _info) {
     checkAuthority(1);
     printBookVector((_infotype == t_ISBN && _info == "") ? book_data.findAll() : book_data.showType(_infotype, _info));
+    Success;
 }
 
-void book::showFinance(Time _time) {
+void book::showFinance(Time _time) {//TODO
     checkAuthority(7);
     Price plus = 0, minus = 0;
     if (_time == -1) {
@@ -495,6 +534,7 @@ void book::showFinance(Time _time) {
         }
     } else {
         if (_time > finance_vector.size()) {
+            Error("NO THAT MANY TRANSACTION TIMES, ONLY " << finance_vector.size() << " TIMES");
             throw ErrorOccur();
         }
         Time t = _time;
@@ -503,6 +543,7 @@ void book::showFinance(Time _time) {
         }
     }
     cout << "+" << plus << "-" << minus << endl;
+    Success;
 }
 
 
@@ -513,9 +554,13 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
     try{
         tbook = book_data.find(_isbn);
     }catch(NotFound) {
+        Error("NO THIS BOOK");
         throw ErrorOccur();
     }
-    if (tbook.quantity < _quantity) throw ErrorOccur();
+    if (tbook.quantity < _quantity) {
+        Error("NO THAT MANY BOOKS, ONLY " << tbook.quantity << " BOOKS");
+        throw ErrorOccur();
+    }
 //    book_data.erase(_isbn);
     tbook.quantity -= _quantity;
 //    book_data.insert(tbook);
@@ -523,23 +568,47 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
     Price total_price = _quantity * tbook.price;
     file::addFinance('+', total_price);
     cout << total_price << endl;
+    Success;
+    FCUT;
+    FUSER;
+    FInfo("  BookISBN=" << _isbn << "  Quantity=" << _quantity << "  Income Per Book=" << tbook.price << "  Total Income=" << total_price);
 }
 
 
-void sys::reportFinance() {
+void sys::reportFinance() {//问题：未算总价，总价本来是可以记录于Basic文件中的。
     checkAuthority(7);
+    FFLUSHLOG;
+    ifstream fin("finance.dat");
+    string s;
+    while (!fin.eof()){
+        getline(fin, s);
+        cout << s << endl;
+    }
+    fin.close();
+    Success;
 }
 
 void sys::reportEmployee() {
     checkAuthority(7);
+    Success;
 }
 
 void sys::reportMyself() {
     checkAuthority(3);
+    Success;
 }
 
 void sys::log() {
     checkAuthority(7);
+    FLUSHLOG;
+    ifstream fin("log.dat");
+    string s;
+    while (!fin.eof()){
+        getline(fin, s);
+        cout << s << endl;
+    }
+    fin.close();
+    Success;
 }
 
 

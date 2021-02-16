@@ -3,5 +3,5 @@ project(code)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(code main.cpp BPlusTree.hpp Error.h )
+add_executable(code main.cpp HashTable.hpp)
 #add_executable(testmain testmain.cpp)

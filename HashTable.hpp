@@ -8,74 +8,98 @@
 #ifndef SRC_BPLUSTREE_HPP
 #define SRC_BPLUSTREE_HPP
 
-#include <string>
 #include <vector>
-#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <map>
 #include <memory.h>
-#include "Error.h"
-using namespace std;
+#include "filemanip.h"
+
 
 
 //------------------------------------
+class NotFound{};
+class MultipleElement{};
 
 typedef string FileName;
 typedef long Address;
 
 template <class TKey ,class TValue>
-class BPlusTree {
+class HashTable {
 private:
-    FileName tree_fn;
-    fstream ftree;
+    FileName fileName;
+    fstream file;
 #ifdef stub
     multimap<TKey, TValue> Map;
 #endif
+
+#ifndef stub
+    TValue find(const TKey &key) const{
+        auto v = findVector(key);
+        auto sz = v.size();
+        if (sz == 0) throw NotFound();
+        if (sz == 1) return v[0];
+        throw MultipleElement();
+    }
+
+    void insert(const TKey &key, const TValue &o){
+        int b_a = hash(key);
+    }
+
+
+    void erase(const TKey &key, const TValue &o){
+    }
+
+    vector<TValue> findVector(const TKey &key) const{
+    }
+
+    vector<TValue> findAll() const{
+    }
+#endif
 public:
-    BPlusTree<TKey, TValue>(const FileName &_tree_fn) : tree_fn(_tree_fn){}
+    HashTable<TKey, TValue>(const FileName &_fileName) : fileName(_fileName){}
 
 #ifndef stub
 
 private:
 
-    static const int R=100, B=100, T=50;
+    const int BlockSize =
+            NodeSize =
+                    R =
+                    NodeNum =
 
-    class Root {
-    private:
-        Address bas[R];
-    public:
-        Root(){
-            memset(bas, -1, sizeof(bas) * R);
-        }
+    using Node = pair<Address, pair<TKey, TValue>>;
 
-    };
+    int hash(const Node &n){
+        return n.second.first % R;
+    }
 
-    class Block{
-    private:
-        Address sas[B];
-    public:
-        Block(){
-            memset(sas, -1, sizeof(sas) * R);
-        }
-        void write(size_t x, writethings){
+//
+//    class Block{
+//    private:
+//        Address startAddress;
+//        Address sas[B];
+//    public:
+//        Block(){
+//            memset(sas, -1, sizeof(sas) * R);
+//        }
+//        void write(size_t x, writethings){
+//
+//        }
+//
+//
+//    };
+//
 
-        }
-    };
-
-    class Element{
-    private:
-
-    public
-
-    };
 
     class Pool{
-        private:
+    private:
 
     public:
 
     };
+
+
 
 
 
@@ -96,11 +120,8 @@ private:
         Map.insert(make_pair(key, o));
     }
 
-//    void erase(const TKey &key){
-//        Map.erase(key);
-//    }
 
-    void preciseErase(const TKey &key, const TValue &o){
+    void erase(const TKey &key, const TValue &o){
         int i = Map.count(key);
         auto it = Map.find(key);
         while(i--){

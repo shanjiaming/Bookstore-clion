@@ -26,6 +26,8 @@
 
 using namespace std;
 
+
+
 enum BookInfoType {
     t_ISBN, t_Book_name, t_Author, t_Keyword
 };
@@ -48,7 +50,7 @@ struct Book {
     Book() = default;
 
 //    Book(cISBN _isbn) { strcpy(isbn, _isbn); price = 0; quantity = 0; strcpy(book_name,""); strcpy(author,""); strcpy(keyword,"");}
-    Book(ISBN _isbn, cBook_name _book_name = "",
+    Book(ISBN _isbn, cBook_name _book_name = "",//这儿初始化用什么比较好？
          cAuthor _author = "",
          cKeyword _keyword = "",
          Price _price = 0,

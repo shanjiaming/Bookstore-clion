@@ -5,26 +5,16 @@
 #ifndef CODE_DATA_H
 #define CODE_DATA_H
 
-#include <string>
-#include <fstream>
+
+#include "filemanip.h"
 using namespace std;
 
-typedef string FileName;
-typedef long Address;
 
 template <class T>
 class Data {
 private:
     FileName fileName;
     fstream file;
-
-    void fwrite(ostream &_file, const T &t) {
-        _file.write(reinterpret_cast<const char *>(&t), sizeof(t));
-    }
-
-    void fread(istream &_file, T &t) {
-        _file.read(reinterpret_cast<char *>(&t), sizeof(t));
-    }
 
     void openfile(){
         file.open(fileName, ios::in | ios::out | ios::binary | ios::app);//FIXME 因为写文件不加app是覆盖式写法，会毁坏原来的数据。而加了app以后只不过是文件置尾，因为没有存到树的文件，也不记得那些数据到底是什么，也不会去读，所以看起来也没有影响。解决方法是加app-这步无论如何都要加，并且把树文件化-这步决定文件的持久性。
