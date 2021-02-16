@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 #define mainstub
 //--------------------------------------------------
 
@@ -443,7 +443,7 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     }
     cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
-    book_data.erase(usb);
+//    book_data.erase(usb);
 
     if (_isbn != "") {
         strcpy(usb, _isbn.c_str());
@@ -461,8 +461,8 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     if (_price != 0) {
         tbook.price = _price;
     }
-    book_data.insert(tbook);
-//    book_data.change(_isbn, tbook);
+//    book_data.insert(tbook);
+    book_data.change(usb, tbook);
 }
 
 void book::import(Quantity _quantity, Price _price) {
@@ -473,10 +473,11 @@ void book::import(Quantity _quantity, Price _price) {
     }
     cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
-    book_data.erase(usb);
+//    book_data.erase(usb);
 
     tbook.quantity += _quantity;
-    book_data.insert(tbook);
+//    book_data.insert(tbook);
+    book_data.change(usb, tbook);
     file::addFinance('-', _price);
 }
 
@@ -508,18 +509,17 @@ void book::showFinance(Time _time) {
 void book::buy(ISBN _isbn, Quantity _quantity) {
     checkAuthority(1);
 //    FindAndPopSelectedBook
-
+    Book tbook;
     try{
-        book_data.find(_isbn);
+        tbook = book_data.find(_isbn);
     }catch(NotFound) {
         throw ErrorOccur();
     }
-    Book tbook = book_data.find(_isbn);
     if (tbook.quantity < _quantity) throw ErrorOccur();
-    book_data.erase(_isbn);
-
+//    book_data.erase(_isbn);
     tbook.quantity -= _quantity;
-    book_data.insert(tbook);
+//    book_data.insert(tbook);
+    book_data.change(_isbn, tbook);
     Price total_price = _quantity * tbook.price;
     file::addFinance('+', total_price);
     cout << total_price << endl;

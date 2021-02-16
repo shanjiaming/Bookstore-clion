@@ -58,23 +58,30 @@ public:
 //    }
 
 
-    void change(const ISBN &key, const Book &book){
-//        Address a = book_isbn_tree.find(key);
-//        Book b = data_book.find(a);
-//        data_book.change(a, book);
-//        book_isbn_tree.preciseErase(b.isbn, a);
-//        book_isbn_tree.insert(book.isbn, a);
-//        book_name_tree.preciseErase(b.book_name, a);
-//        book_name_tree.insert(book.book_name, a);
-//        book_author_tree.preciseErase(b.author, a);
-//        book_author_tree.insert(book.author, a);
-//        vector<Keyword> keywords = splitKeyword(b.keyword);
-//        for(Keyword oneword : keywords){
-//            book_keyword_tree.preciseErase(b.keyword, a);
-//            book_keyword_tree.insert(book.keyword, a);
-//        }
-        erase(key);
-        insert(book);
+    void change(const ISBN &key, const Book &b){
+
+        {
+        Address a = book_isbn_tree.find(key);
+        Book b_erase = data_book.find(a);
+        data_book.erase(a);
+        book_isbn_tree.preciseErase(b_erase.isbn, a);
+        book_name_tree.preciseErase(b_erase.book_name, a);
+        book_author_tree.preciseErase(b_erase.author, a);
+        vector<Keyword> keywords = splitKeyword(b_erase.keyword);
+        for(Keyword oneword : keywords){
+            book_keyword_tree.preciseErase(oneword, a);
+        }
+        }
+        {
+            Address a = data_book.insert(b);
+            book_isbn_tree.insert(b.isbn, a);
+            book_name_tree.insert(b.book_name, a);
+            book_author_tree.insert(b.author, a);
+            vector<Keyword> keywords = splitKeyword(b.keyword);
+            for(Keyword oneword : keywords){
+                book_keyword_tree.insert(oneword, a);
+            }
+        }
     }
 
     Book find(const ISBN &key){
