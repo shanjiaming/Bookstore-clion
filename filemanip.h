@@ -7,9 +7,19 @@
 
 #include <string>
 #include <fstream>
+using namespace std;
 
 typedef string FileName;
 typedef long Address;
+//constexpr int I = sizeof(int);
+//constexpr int L = sizeof(long);
+void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我猜测无关紧要。
+    ifstream fin(fn);
+    if (fin) return;
+    ofstream fout(fn);
+    assert(fout);
+    fout.close();
+}
 
 template <class T>
 void fwrite(ostream &_file, const T &t) {

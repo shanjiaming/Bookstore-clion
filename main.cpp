@@ -4,7 +4,9 @@
 
 #include "BookAndUser.h"
 #include "logger.h"
-class ErrorOccur{};
+
+class ErrorOccur {
+};
 
 //-------------------------------------------------
 
@@ -12,13 +14,9 @@ UserData user_data;
 BookData book_data;
 
 vector<CoreUser> user_vector;
-#ifdef mainstub
-vector<Finance> finance_vector;//TODO 抽象为文件结构
-#else
-fstream finance_file("finance.dat", ios::app);
-fstream operation_file("operation.dat", ios::app);
-//TODO 很简单的顺序文件，明天再写
-#endif
+
+string input;
+
 
 //-------------------------------------------------
 //private Macros and functions
@@ -124,7 +122,7 @@ namespace sys {
 
 int main() {
 #ifdef debug
-    freopen("../../Data/AdvancedDataSet/testcase4/1.in", "r", stdin);
+    freopen("../../Data/AdvancedDataSet/testcase5/1.in", "r", stdin);
     freopen("../myout.txt", "w", stdout);
 #endif
     initialize();
@@ -147,10 +145,21 @@ void initialize() {
         //TODO
     };
     cout << fixed << setprecision(2);
-    if (firstOpen()) {
+    ifstream tester("finance.dat");
+    if (!tester) {
         user_data.insert(User("root", "sjtu", "root", 7));
+        fcreate("finance.dat");
+        fstream fs("finance.dat", ios::binary | ios::out | ios::in);
+        fs.seekp(0);
+        fwrite(fs, Price(0));
+        fs.seekp(sizeof(Price));
+        fwrite(fs, Price(0));
+        fs.close();
+        fcreate("operation.dat");
         //TODO
         openMark();
+    } else {
+        tester.close();
     }
     //TODO?
     Success;
@@ -158,7 +167,6 @@ void initialize() {
 
 void function_chooser() {
 
-    string input;
     smatch parameter;
 
     //management
@@ -475,7 +483,8 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
 //    book_data.erase(usb);
-
+    cISBN usb2;
+    strcpy(usb2, usb);
     if (_isbn != "") {
         strcpy(usb, _isbn.c_str());
         strcpy(tbook.isbn, _isbn.c_str());
@@ -493,8 +502,9 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
         tbook.price = _price;
     }
 //    book_data.insert(tbook);
-    book_data.change(usb, tbook);
+    book_data.change(usb2, tbook);
     Success;
+    OInfo;
 }
 
 void book::import(Quantity _quantity, Price _price) {
@@ -514,9 +524,11 @@ void book::import(Quantity _quantity, Price _price) {
     book_data.change(usb, tbook);
     file::addFinance('-', _price);
     Success;
-    FCUT;
-    FUSER;
-    FInfo("  BookISBN=" << usb << "  Quantity=" << _quantity << "  Cost Per Book=" << double(_price)/_quantity << "  Total Cost=" << _price);
+
+
+    FInfo("  BookISBN=" << usb << "  Quantity=" << _quantity << "  Cost Per Book=" << double(_price) / _quantity
+                        << "  Total Cost=" << _price);
+    OInfo;
 }
 
 void book::show(BookInfoType _infotype, StringType _info) {
@@ -527,22 +539,32 @@ void book::show(BookInfoType _infotype, StringType _info) {
 
 void book::showFinance(Time _time) {//TODO
     checkAuthority(7);
+    fstream finance_file("finance.dat", ios::binary | ios::in | ios::out);
     Price plus = 0, minus = 0;
     if (_time == -1) {
-        for (auto i : finance_vector) {
-            ((i.sign == '+') ? plus : minus) += i.price;
-        }
+        finance_file.seekg(0);
+        fread(finance_file, plus);
+        finance_file.seekg(sizeof(Price));
+        fread(finance_file, minus);
+        finance_file.close();
     } else {
-        if (_time > finance_vector.size()) {
-            Error("NO THAT MANY TRANSACTION TIMES, ONLY " << finance_vector.size() << " TIMES");
+        Time t = _time;
+        for (finance_file.seekg(0, ios::end); t--;) {
+            Price temp;
+            char c;
+            finance_file.seekg(-sizeof(Price) - 1, ios::cur);
+            fread(finance_file, c);
+            fread(finance_file, temp);
+            ((c == '+') ? plus : minus) += temp;
+            finance_file.seekg(-sizeof(Price) - 1, ios::cur);
+        }
+        finance_file.seekg(-sizeof(Price) * 2, ios::cur);
+        if (!finance_file) {
+            Error("NO THAT MANY TRANSACTION TIMES");
             throw ErrorOccur();
         }
-        Time t = _time;
-        for (auto i = finance_vector.rbegin(); t--; ++i) {
-            ((i->sign == '+') ? plus : minus) += i->price;
-        }
     }
-    cout << "+" << plus << "-" << minus << endl;
+    cout << "+ " << plus << " - " << minus << endl;
     Success;
 }
 
@@ -551,9 +573,9 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
     checkAuthority(1);
 //    FindAndPopSelectedBook
     Book tbook;
-    try{
+    try {
         tbook = book_data.find(_isbn);
-    }catch(NotFound) {
+    } catch (NotFound) {
         Error("NO THIS BOOK");
         throw ErrorOccur();
     }
@@ -569,27 +591,78 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
     file::addFinance('+', total_price);
     cout << total_price << endl;
     Success;
-    FCUT;
-    FUSER;
-    FInfo("  BookISBN=" << _isbn << "  Quantity=" << _quantity << "  Income Per Book=" << tbook.price << "  Total Income=" << total_price);
+    FInfo("  BookISBN=" << _isbn << "  Quantity=" << _quantity << "  Income Per Book=" << tbook.price
+                        << "  Total Income=" << total_price);
 }
 
 
 void sys::reportFinance() {//问题：未算总价，总价本来是可以记录于Basic文件中的。
     checkAuthority(7);
     FFLUSHLOG;
-    ifstream fin("finance.dat");
+    ifstream fin("financelog.dat");
     string s;
-    while (!fin.eof()){
+    while (!fin.eof()) {
         getline(fin, s);
         cout << s << endl;
     }
     fin.close();
+    fin.open("finance.dat", ios::binary | ios::in);
+    Price plus, minus;
+    fin.seekg(0);
+    fread(fin, plus);
+    fin.seekg(sizeof(Price));
+    fread(fin, minus);
+    fin.close();
+    int profit = plus - minus;
+    cout << CUT << CUT << "Your total income is " << plus << '\n' << "Your total outcome is " << minus << '\n'
+         << "Your total profit is " << profit << '\n';
+    if (profit > 0) cout << "Congratulations! Your bookstore makes a lot of money!" << '\n';
+    else cout << "Opps! Your bookstore is losing money!" << '\n';
+    cout << CUT << CUT << flush;
+
     Success;
 }
 
 void sys::reportEmployee() {
     checkAuthority(7);
+//    vector<Operation> cache;
+    map<User_id, vector<Operation> > employeesOperations;
+    ifstream fin("operation.dat", ios::binary|ios::in);
+    fin.seekg(0);
+
+    while (true) {
+//        cout << __LINE__ << endl;
+
+        Operation temp;
+        cout << "tellg" << fin.tellg()<<endl;
+        fread(fin, temp);
+        cout << "tellg" << fin.tellg()<<endl;
+        if (!fin) break;
+//cout << __LINE__ << endl;
+//        cache.push_back(temp);
+        if (temp.authority == 3) {
+//            cout << __LINE__ << endl;
+            employeesOperations[temp.user_id].push_back(temp);
+        }
+    }
+
+    fin.close();
+    cout << CUT << '\n';
+    for (auto employeeOperations : employeesOperations) {
+//        cout << __LINE__ << endl;
+        cout << CUT << YELLOW << "Employee: UserID=" << employeeOperations.first << END << '\n'<< CUT;
+        for (auto oper : employeeOperations.second){
+//            cout << __LINE__ << endl;
+            cout << YELLOW << "Date:" << oper.date <<
+             "  Time:" << oper.time << END << '\n';
+            cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
+            cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
+        }
+        cout << CUT;
+
+    }
+    cout << CUT << '\n';
+
     Success;
 }
 
@@ -603,7 +676,7 @@ void sys::log() {
     FLUSHLOG;
     ifstream fin("log.dat");
     string s;
-    while (!fin.eof()){
+    while (!fin.eof()) {
         getline(fin, s);
         cout << s << endl;
     }
@@ -613,6 +686,17 @@ void sys::log() {
 
 
 void file::addFinance(Sign _c, Price _price) {
-    finance_vector.push_back(Finance(_c, _price));
+    int I = ((_c == '+') ? 0 : sizeof(Price));
+//    finance_vector.push_back(Finance(_c, _price));
+    fstream finance_file("finance.dat", ios::binary | ios::in | ios::out);
+    finance_file.seekg(I);
+    Price temp;
+    fread(finance_file, temp);
+    finance_file.seekp(I);
+    fwrite(finance_file, temp + _price);
+    finance_file.seekp(0, ios::end);
+    fwrite(finance_file, _c);
+    fwrite(finance_file, _price);
+    finance_file.close();
 }
 

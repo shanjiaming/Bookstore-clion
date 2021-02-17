@@ -6,10 +6,12 @@
 
 
 #include <iostream>
-#include <fstream>
+#include "filemanip.h"
+#include "BasicHeader.h"
 using namespace std;
 ofstream fout("log.dat", ios::app);
 ofstream ff("financelog.dat", ios::app);
+ofstream fo("operation.dat", ios::app | ios::binary);
 
 #define COLOUR
 #ifdef COLOUR
@@ -26,9 +28,8 @@ ofstream ff("financelog.dat", ios::app);
 #define END     ""
 #endif
 
-#define ACT_INFO   __DATE__ << " " << __TIME__ << ':' << __FUNCTION__ << ':' << __LINE__
-//把endl改为'\n'会减少超时吗？
-//#define fout cout;
+#define ACT_INFO   __DATE__ << " " << __TIME__ << ':' << __FUNCTION__
+
 #define CUT "---------------------------------------------\n"
 #define Info(x)    fout << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'
 #define Success    fout << GREEN  << ACT_INFO  << ": success: " << __FUNCTION__ << END << '\n' << CUT
@@ -39,10 +40,32 @@ ofstream ff("financelog.dat", ios::app);
 #define BOOK fout << YELLOW << "selected book_id=" <<( CHECKSTACK user_vector.back().selected_book)  << END << '\n'
 #define FLUSHLOG fout << flush
 
-#define FInfo(x) ff << YELLOW  << __DATE__ << " " << __TIME__ << ':'  << ": transaction: " << __FUNCTION__ << ':' << x << END << '\n'
+typedef char Input[300];
+struct Operation{
+    cUser_id user_id;
+    Authority authority;
+    cISBN selected_book;
+    Input input;
+    Input time;
+    Input date;
+    Operation() = default;
+    Operation(const char *_userId, Authority authority, char *_selected_book, string _operation) : authority(authority)
+                                                                           {strcpy(user_id,_userId);
+                                                                               strcpy(input, _operation.c_str());
+                                                                               strcpy(selected_book, _selected_book);
+                                                                               strcpy(time, __TIME__);
+                                                                               strcpy(date, __DATE__);
+    }
+};
+#define OInfo {fo.seekp(0,ios::end);/*cout << "tellp"<<fo.tellp()<<endl;*/ \
+fwrite(fo, Operation(user_vector.back().user_id, user_vector.back().authority, user_vector.back().selected_book, input)); \
+/*cout << "tellp"<<fo.tellp()<<endl;*/}
+
 #define FUSER ff << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
 #define FFLUSHLOG ff << flush
 #define FCUT ff << CUT
+#define FInfo(x) FCUT;FUSER;ff << YELLOW  << __DATE__ << " " << __TIME__ << " " << __FUNCTION__ << ':' << x << END << '\n'
+
 
 #define CODE_LOGGER_H
 

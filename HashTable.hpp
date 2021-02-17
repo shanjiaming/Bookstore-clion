@@ -21,9 +21,6 @@
 class NotFound{};
 class MultipleElement{};
 
-typedef string FileName;
-typedef long Address;
-
 template <class TKey ,class TValue>
 class HashTable {
 private:
