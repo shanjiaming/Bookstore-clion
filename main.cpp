@@ -1,5 +1,4 @@
 //#define debug
-//#define mainstub
 //--------------------------------------------------
 
 #include "BookAndUser.h"
@@ -122,7 +121,7 @@ namespace sys {
 
 int main() {
 #ifdef debug
-    freopen("../../Data/AdvancedDataSet/testcase5/1.in", "r", stdin);
+    freopen("../../Data/RobustDataSet/testcase4.in", "r", stdin);
     freopen("../myout.txt", "w", stdout);
 #endif
     initialize();
@@ -146,7 +145,7 @@ void initialize() {
     };
     cout << fixed << setprecision(2);
     ifstream tester("finance.dat");
-    if (!tester) {
+    if (true/*!tester*/) {//FIXME true is only to debug
         user_data.insert(User("root", "sjtu", "root", 7));
         fcreate("finance.dat");
         fstream fs("finance.dat", ios::binary | ios::out | ios::in);
@@ -221,7 +220,10 @@ void function_chooser() {
             rule_quit("^quit$");
 
     getline(cin, input);
+    input.erase(0,input.find_first_not_of(" "));
     input.erase(input.find_last_not_of(" ") + 1);
+    if (cin.eof()) exit(0);
+    if (input == "") return;
 
 //    USER;
     Info("try to " + input);
@@ -358,9 +360,7 @@ void function_chooser() {
     if (regex_search(input, parameter, rule_quit)) {
         exit(0);
     }
-    if (cin.eof()) {
-        exit(0);
-    }
+
     Error("SYNTAX ERROR");
     throw ErrorOccur();
 }
@@ -486,7 +486,12 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     cISBN usb2;
     strcpy(usb2, usb);
     if (_isbn != "") {
-        strcpy(usb, _isbn.c_str());
+//        strcpy(usb, _isbn.c_str());
+        for(auto &u : user_vector){
+            if (!strcmp(u.selected_book, usb2)){
+                strcpy(u.selected_book, _isbn.c_str());
+            }
+        }
         strcpy(tbook.isbn, _isbn.c_str());
     }
     if (_book_name != "") {
@@ -496,6 +501,20 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
         strcpy(tbook.author, _author.c_str());
     }
     if (_keyword != "") {
+        //repeat keyword test
+        vector<Keyword> ret;
+        stringstream ss(_keyword);
+        string oneword;
+        while (getline(ss, oneword, '|')){
+            ret.push_back(oneword);
+        }
+        sort(ret.begin(), ret.end());
+        auto temp = unique(ret.begin(), ret.end());
+        if(temp != ret.end()){
+            Error("REPEATED KEYWORDS");
+            throw ErrorOccur();
+        }
+
         strcpy(tbook.keyword, _keyword.c_str());
     }
     if (_price != 0) {

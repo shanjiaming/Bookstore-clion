@@ -8,6 +8,7 @@
 #include "BasicHeader.h"
 #include "HashTable.hpp"
 #include "data.h"
+#include "logger.h"
 
 class BookData{
 public:
