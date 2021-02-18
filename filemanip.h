@@ -7,6 +7,7 @@
 
 #include <string>
 #include <fstream>
+#include <cassert>
 using namespace std;
 
 typedef string FileName;
@@ -20,6 +21,10 @@ void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我�
     assert(fout);
     fout.close();
 }
+
+#define openfile file.open(fileName, ios::in | ios::out | ios::binary);assert(file);
+
+#define closefile file.close();
 
 template <class T>
 void fwrite(ostream &_file, const T &t) {

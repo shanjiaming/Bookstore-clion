@@ -16,10 +16,7 @@ private:
     FileName fileName;
     fstream file;
 
-    void openfile(){
-        file.open(fileName, ios::in | ios::out | ios::binary | ios::app);//FIXME 因为写文件不加app是覆盖式写法，会毁坏原来的数据。而加了app以后只不过是文件置尾，因为没有存到树的文件，也不记得那些数据到底是什么，也不会去读，所以看起来也没有影响。解决方法是加app-这步无论如何都要加，并且把树文件化-这步决定文件的持久性。
-        assert(file);
-    }
+
 
 public:
     Data<T>(const FileName &_fileName) : fileName(_fileName){
@@ -35,7 +32,7 @@ public:
 
 
     T find(Address a) {
-        openfile();
+        openfile
         T ret;
         file.seekg(a);
         fread(file, ret);
@@ -44,7 +41,7 @@ public:
     }
 
     Address insert(const T &t){
-        openfile();
+        openfile
         file.seekp(0, ios::end);//和上面呼应，注意这里的置尾
         Address ret = file.tellp();
         fwrite(file, t);
@@ -57,7 +54,7 @@ public:
     }
 
     void change(Address a, T t){
-        openfile();
+        openfile
         file.seekp(a);
         fwrite(file, t);
         file.close();

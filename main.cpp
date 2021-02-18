@@ -137,12 +137,6 @@ int main() {
 }
 
 void initialize() {
-    auto firstOpen = []() -> bool {
-        //TODO
-    };
-    auto openMark = []() {
-        //TODO
-    };
     cout << fixed << setprecision(2);
     ifstream tester("finance.dat");
     if (true/*!tester*/) {//FIXME true is only to debug
@@ -155,8 +149,6 @@ void initialize() {
         fwrite(fs, Price(0));
         fs.close();
         fcreate("operation.dat");
-        //TODO
-        openMark();
     } else {
         tester.close();
     }
@@ -653,9 +645,9 @@ void sys::reportEmployee() {
 //        cout << __LINE__ << endl;
 
         Operation temp;
-        cout << "tellg" << fin.tellg()<<endl;
+//        cout << "tellg" << fin.tellg()<<endl;
         fread(fin, temp);
-        cout << "tellg" << fin.tellg()<<endl;
+//        cout << "tellg" << fin.tellg()<<endl;
         if (!fin) break;
 //cout << __LINE__ << endl;
 //        cache.push_back(temp);
@@ -687,6 +679,23 @@ void sys::reportEmployee() {
 
 void sys::reportMyself() {
     checkAuthority(3);
+    vector<Operation> myop;
+    ifstream fin("operation.dat", ios::binary|ios::in);
+    fin.seekg(0);
+    while (true){
+        Operation temp;
+        fread(fin, temp);
+        if(!fin) break;
+        if (!strcmp(temp.user_id, user_vector.back().user_id))myop.push_back(temp);
+    }
+    cout << CUT;
+    for (auto oper : myop){
+        cout << YELLOW << "Date:" << oper.date <<
+             "  Time:" << oper.time << END << '\n';
+        cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
+        cout << YELLOW << "Opertion:" << oper.input << END << '\n' ;
+    }
+    cout << CUT;
     Success;
 }
 
