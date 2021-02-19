@@ -15,18 +15,9 @@ class Data {
 private:
     FileName fileName;
     fstream file;
-
-
-
 public:
     Data<T>(const FileName &_fileName) : fileName(_fileName){
-        ifstream itemp(_fileName);
-        if(!itemp){
-            ofstream otemp;
-            otemp.open(_fileName, ios::out | ios::binary);
-            otemp.close();
-        }
-
+        fcreate(_fileName);
         //TODO 未考虑initialize。需要在打开模式的地方抉择是否进行文件创建。
     }
 

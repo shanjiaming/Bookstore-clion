@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 //--------------------------------------------------
 
 #include "BookAndUser.h"
@@ -121,7 +121,7 @@ namespace sys {
 
 int main() {
 #ifdef debug
-    freopen("../../Data/RobustDataSet/testcase4.in", "r", stdin);
+    freopen("../../Data/AdvancedDataSet/testcase1/1.in", "r", stdin);
     freopen("../myout.txt", "w", stdout);
 #endif
     initialize();

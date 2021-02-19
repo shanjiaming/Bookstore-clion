@@ -1,4 +1,4 @@
-//#define stub
+#define stub
 //#define treedebug
 //------------------------------------
 //
@@ -22,21 +22,9 @@ class NotFound {};
 
 class MultipleElement {};
 
-const int KEY[2] = {393241, 786433};
-const int MOD = 998244353;
-pair<int,int> hash(string arg) {
-    int results[2];
-    for (int num = 0; num < 2; ++num) {
-        results[num] = 0;
-        for (int i = 0; i < arg.length(); ++i) {
-            if (arg[i] == '\0') break;
-            results[num] = int(((long long) results[num] * KEY[num] + arg[i]) % MOD);
-        }
-    }
-    return {results[0], results[1]};
-}
 
-template<class TKey = pair<int,int>, class TValue = long>
+
+//template<class TKey = pair<int,int>, class TValue = long>
 class UnrolledLinkedList {
 private:
     FileName fileName;
@@ -44,21 +32,28 @@ private:
 public:
 
 #ifdef stub
+    using TKey = pair<int,int>;
+    using TValue = Address;
     multimap<TKey, TValue> Map;
-    UnrolledLinkedList<TKey, TValue>(const FileName &_fileName) : fileName(_fileName) {
+    UnrolledLinkedList(const FileName &_fileName) : fileName(_fileName) {
     }
 #endif
 
 #ifndef stub
 
-    UnrolledLinkedList<TKey, TValue>(const FileName &_fileName) : fileName(_fileName) {
-        fcreate(_fileName);
+    UnrolledLinkedList(const FileName &_fileName) : fileName(_fileName) {
+        ifstream fin(_fileName);
+        if (fin) return;
+        ofstream fout(_fileName);
+        assert(fout);
+        fout.close();
         file.open(_fileName);
         file.seekp(0);
         fwrite(file, Block());
         file.close();
     }
-
+    using TKey = pair<int,int>;
+    using TValue = Address;
     using Node = pair<TKey, TValue>;
    /* struct Node{//to make == and = ok
         TKey first;
@@ -105,7 +100,7 @@ public:
     static const int Merge = Nmax;//不这样似乎会删出num=0块，下一个满块的bug
 
     struct Block {
-        friend UnrolledLinkedList<TKey, TValue>;
+        friend UnrolledLinkedList;
         int next = -1, num = 0;
         Node nodes[Nmax];
     };
@@ -125,8 +120,22 @@ public:
         fwrite(file, b);
     }
 
+    const int KEY[2] = {393241, 786433};
+    const int MOD = 998244353;
+    pair<int,int> hash(string arg) {
+        int results[2];
+        for (int num = 0; num < 2; ++num) {
+            results[num] = 0;
+            for (int i = 0; i < arg.length(); ++i) {
+                if (arg[i] == '\0') break;
+                results[num] = int(((long long) results[num] * KEY[num] + arg[i]) % MOD);
+            }
+        }
+        return {results[0], results[1]};
+    }
+
 public:
-    TValue find(const TKey &key) {
+    TValue find(const string &key) {
         vector<TValue> v = findVector(key);
         auto sz = v.size();
         if (sz == 0) throw NotFound();
@@ -134,7 +143,8 @@ public:
         throw MultipleElement();
     }
 
-    void insert(const TKey &key, const TValue &o) {
+    void insert(const string &_key, const Address &o) {
+        pair<int, int> key = hash(_key);
         openfile
         Block bl;
         Node insert_node {key, o};
@@ -184,7 +194,8 @@ public:
     }
 //FIXME 小心整块连挤现象爆内存或时间
 
-    void erase(const TKey &key, const TValue &o) {
+    void erase(const string &_key, const Address &o) {
+        pair<int, int> key = hash(_key);
         openfile
         Block bl;
         Node erase_node {key, o};
@@ -219,7 +230,8 @@ public:
         closefile
     }
 
-    vector<TValue> findVector(const TKey &key) {
+    vector<TValue> findVector(const string &_key) {
+        pair<int, int> key = hash(_key);
         openfile
         vector<TValue> v;
         Block bl;

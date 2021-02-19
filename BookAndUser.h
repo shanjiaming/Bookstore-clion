@@ -96,11 +96,11 @@ public:
 
 private:
     Data<Book> data_book;
-    UnrolledLinkedList<ISBN, Address> book_isbn_table;
-    UnrolledLinkedList<Book_name, Address> book_name_table;
-    UnrolledLinkedList<Author, Address> book_author_table;
-    UnrolledLinkedList<Keyword, Address> book_keyword_table;
-    const map<BookInfoType, UnrolledLinkedList<StringType, Address>*> c_bookShowFileMap{{t_ISBN,      &book_isbn_table},
+    UnrolledLinkedList book_isbn_table;
+    UnrolledLinkedList  book_name_table;
+    UnrolledLinkedList book_author_table;
+    UnrolledLinkedList  book_keyword_table;
+    const map<BookInfoType, UnrolledLinkedList*> c_bookShowFileMap{{t_ISBN,      &book_isbn_table},
                                                                                         {t_Book_name, &book_name_table},
                                                                                         {t_Author,    &book_author_table},
                                                                                         {t_Keyword,   &book_keyword_table}};
@@ -145,7 +145,7 @@ public:
 
 private:
     Data<User> data_user;
-    UnrolledLinkedList<User_id, Address> user_id_table;
+    UnrolledLinkedList user_id_table;
     vector<User> vAdd2vUser(vector<Address> v_address){
         vector<User> v_user;
         for (Address a : v_address){
