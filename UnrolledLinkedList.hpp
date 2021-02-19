@@ -1,5 +1,5 @@
 //#define stub
-#define treedebug
+//#define treedebug
 //------------------------------------
 //
 // Created by JiamingShan on 2021/1/28.
@@ -90,7 +90,7 @@ public:
 #endif
 
     static const int Nsize = sizeof(Node);
-    static const int Nmax = 4;
+    static const int Nmax = 400;
     static const int Merge = Nmax;//不这样似乎会删出num=0块，下一个满块的bug
 
     struct Block {
