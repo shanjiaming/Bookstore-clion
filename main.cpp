@@ -4,10 +4,13 @@
 #include "BookAndUser.h"
 #include "logger.h"
 
-class ErrorOccur {
-};
+class ErrorOccur {};
 
 //-------------------------------------------------
+
+ofstream ffout("log.dat", ios::app);
+ofstream ff("financelog.dat", ios::app);
+ofstream fo("operation.dat", ios::app | ios::binary);
 
 UserData user_data;
 BookData book_data;

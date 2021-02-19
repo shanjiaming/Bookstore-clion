@@ -7,7 +7,7 @@ add_executable(code main.cpp UnrolledLinkedList.hpp
         BookAndUser.h BookAndUser.cpp
         BasicHeader.h
         Data.h Data.cpp
-        logger.h filemanip.h)
+        logger.h filemanip.h filemanip.cpp)
 #add_executable(testmain testmain.cpp)
 #add_executable(testUnrolledLinkedList testUnrolledLinkedList.cpp
 #        UnrolledLinkedList.hpp)

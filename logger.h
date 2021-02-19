@@ -9,9 +9,7 @@
 #include "filemanip.h"
 #include "BasicHeader.h"
 using namespace std;
-ofstream fout("log.dat", ios::app);
-ofstream ff("financelog.dat", ios::app);
-ofstream fo("operation.dat", ios::app | ios::binary);
+
 
 #define COLOUR
 #ifdef COLOUR
@@ -31,14 +29,14 @@ ofstream fo("operation.dat", ios::app | ios::binary);
 #define ACT_INFO   __DATE__ << " " << __TIME__ << ':' << __FUNCTION__
 
 #define CUT "---------------------------------------------\n"
-#define Info(x)    fout << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'
-#define Success    fout << GREEN  << ACT_INFO  << ": success: " << __FUNCTION__ << END << '\n' << CUT
-#define Error(x)   fout << RED    << ACT_INFO  << ": error: " << x << END << '\n' << CUT
+#define Info(x)    ffout << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'
+#define Success    ffout << GREEN  << ACT_INFO  << ": success: " << __FUNCTION__ << END << '\n' << CUT
+#define Error(x)   ffout << RED    << ACT_INFO  << ": error: " << x << END << '\n' << CUT
 
 #define CHECKSTACK  user_vector.empty()?"NULL":
-#define USER fout << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
-#define BOOK fout << YELLOW << "selected book_id=" <<( CHECKSTACK user_vector.back().selected_book)  << END << '\n'
-#define FLUSHLOG fout << flush
+#define USER ffout << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
+#define BOOK ffout << YELLOW << "selected book_id=" <<( CHECKSTACK user_vector.back().selected_book)  << END << '\n'
+#define FLUSHLOG ffout << flush
 
 typedef char Input[300];
 struct Operation{

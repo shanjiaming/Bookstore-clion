@@ -14,13 +14,7 @@ typedef string FileName;
 typedef int Address;
 //constexpr int I = sizeof(int);
 //constexpr int L = sizeof(long);
-void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我猜测无关紧要。
-    ifstream fin(fn);
-    if (fin) return;
-    ofstream fout(fn);
-    assert(fout);
-    fout.close();
-}
+void fcreate(FileName fn);
 
 #define openfile file.open(fileName, ios::in | ios::out | ios::binary);assert(file);
 
