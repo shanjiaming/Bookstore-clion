@@ -14,7 +14,7 @@ Program Structure：
 
   - BookAndUser.h
 
-    1. HashTable.h
+    1. UnrolledLinkedList.h
 
     2. Data.h
 
@@ -98,15 +98,15 @@ public:
     vector<Book> findAll()
   ```
 
-The reason it can be so simple is due to the service `Data` and `HashTable` provided.
+The reason it can be so simple is due to the service `Data` and `UnrolledLinkedList` provided.
 
 ```
 private:
     Data<Book> data_book;
-    HashTable<ISBN, Address> book_isbn_table;
-    HashTable<Book_name, Address> book_name_table;
-    HashTable<Author, Address> book_author_table;
-    HashTable<Keyword, Address> book_keyword_table;
+    UnrolledLinkedList<ISBN, Address> book_isbn_table;
+    UnrolledLinkedList<Book_name, Address> book_name_table;
+    UnrolledLinkedList<Author, Address> book_author_table;
+    UnrolledLinkedList<Keyword, Address> book_keyword_table;
 ```
 
 Also, let's see `UserData`.
@@ -123,12 +123,12 @@ public:
 ```
 private:
     Data<User> data_user;
-    HashTable<User_id, Address> user_id_table;
+    UnrolledLinkedList<User_id, Address> user_id_table;
 ```
 
 Almost the same.
 
-After that, let's see what are class `Data` and `HashTable`.
+After that, let's see what are class `Data` and `UnrolledLinkedList`.
 
 
 

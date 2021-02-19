@@ -139,8 +139,7 @@ int main() {
 void initialize() {
     cout << fixed << setprecision(2);
     ifstream tester("finance.dat");
-    if (true/*!tester*/) {//FIXME true is only to debug
-        user_data.insert(User("root", "sjtu", "root", 7));
+    if (!tester) {//FIXME true is only to debug
         fcreate("finance.dat");
         fstream fs("finance.dat", ios::binary | ios::out | ios::in);
         fs.seekp(0);
@@ -149,6 +148,7 @@ void initialize() {
         fwrite(fs, Price(0));
         fs.close();
         fcreate("operation.dat");
+        user_data.insert(User("root", "sjtu", "root", 7));
     } else {
         tester.close();
     }

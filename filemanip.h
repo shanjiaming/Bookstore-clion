@@ -20,9 +20,10 @@ void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我�
     ofstream fout(fn);
     assert(fout);
     fout.close();
+    cout << __FUNCTION__ << fn << endl;
 }
 
-#define openfile file.open(fileName, ios::in | ios::out | ios::binary);assert(file);
+#define openfile cout << __FUNCTION__<<endl;file.open(fileName, ios::in | ios::out | ios::binary);assert(file);
 
 #define closefile file.close();
 
