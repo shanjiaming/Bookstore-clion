@@ -1,5 +1,5 @@
-#define stub
-//#define treedebug
+//#define stub
+#define treedebug
 //------------------------------------
 //
 // Created by JiamingShan on 2021/1/28.
@@ -8,6 +8,7 @@
 #ifndef SRC_BPLUSTREE_HPP
 #define SRC_BPLUSTREE_HPP
 
+#include <tuple>
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -18,10 +19,14 @@
 
 
 //------------------------------------
-class NotFound {};
+class NotFound {
+};
 
-class MultipleElement {};
+class NoErase {
+};
 
+class MultipleElement {
+};
 
 
 //template<class TKey = pair<int,int>, class TValue = long>
@@ -52,49 +57,38 @@ public:
         fwrite(file, Block());
         file.close();
     }
-    using TKey = pair<int,int>;
+
+#ifndef treedebug
+    using Sdebug=string;
+    using TKey = tuple<int,int, int>;
     using TValue = Address;
     using Node = pair<TKey, TValue>;
-   /* struct Node{//to make == and = ok
-        TKey first;
-        TValue second;
-        Node() = default;
-        Node(TKey _first, TValue _second){
-            if (typeid(TKey) == typeid(char[])) strcpy(first, _first);
-            else first = _first;
-            if (typeid(TKey) == typeid(char[])) strcpy(second, _second);
-            else second = _second;
-        }
 
-        bool operator==(const Node &rhs) const {
-            return first == rhs.first &&
-                   second == rhs.second;
+    const int KEY[3] = {393241, 786433, 19260817};
+    const int MOD = 998244353;
+    TKey hash(Sdebug arg) {
+        int results[3];
+        for (int num = 0; num < 3; ++num) {
+            results[num] = 0;
+            for (int i = 0; i < arg.length(); ++i) {
+                if (arg[i] == '\0') break;
+                results[num] = int(((long long) results[num] * KEY[num] + arg[i]) % MOD);
+            }
         }
+        return {results[0], results[1], results[2]};
+    }
+#else
+    using Sdebug = Address;
+    using TKey = Address;
+    using TValue = Address;
+    using Node = pair<TKey, TValue>;
 
-        bool operator!=(const Node &rhs) const {
-            return !(rhs == *this);
-        }
+    TKey hash(Sdebug arg) {
+        return arg;
+    }
 
-        bool operator<(const Node &rhs) const {
-            if (first < rhs.first)
-                return true;
-            if (rhs.first < first)
-                return false;
-            return second < rhs.second;
-        }
+#endif
 
-        bool operator>(const Node &rhs) const {
-            return rhs < *this;
-        }
-
-        bool operator<=(const Node &rhs) const {
-            return !(rhs < *this);
-        }
-
-        bool operator>=(const Node &rhs) const {
-            return !(*this < rhs);
-        }
-    };*/
     static const int Nsize = sizeof(Node);
     static const int Nmax = 4;
     static const int Merge = Nmax;//不这样似乎会删出num=0块，下一个满块的bug
@@ -120,22 +114,9 @@ public:
         fwrite(file, b);
     }
 
-    const int KEY[2] = {393241, 786433};
-    const int MOD = 998244353;
-    pair<int,int> hash(string arg) {
-        int results[2];
-        for (int num = 0; num < 2; ++num) {
-            results[num] = 0;
-            for (int i = 0; i < arg.length(); ++i) {
-                if (arg[i] == '\0') break;
-                results[num] = int(((long long) results[num] * KEY[num] + arg[i]) % MOD);
-            }
-        }
-        return {results[0], results[1]};
-    }
 
 public:
-    TValue find(const string &key) {
+    TValue find(const Sdebug &key) {
         vector<TValue> v = findVector(key);
         auto sz = v.size();
         if (sz == 0) throw NotFound();
@@ -143,11 +124,11 @@ public:
         throw MultipleElement();
     }
 
-    void insert(const string &_key, const Address &o) {
-        pair<int, int> key = hash(_key);
+    void insert(const Sdebug &_key, const Address &o) {
+        TKey key = hash(_key);
         openfile
         Block bl;
-        Node insert_node {key, o};
+        Node insert_node{key, o};
         getblock(0, bl);
         Address block_pos = 0;
         while (bl.num && bl.nodes[bl.num - 1] < insert_node) {
@@ -194,11 +175,11 @@ public:
     }
 //FIXME 小心整块连挤现象爆内存或时间
 
-    void erase(const string &_key, const Address &o) {
-        pair<int, int> key = hash(_key);
+    void erase(const Sdebug &_key, const Address &o) {
+        TKey key = hash(_key);
         openfile
         Block bl;
-        Node erase_node {key, o};
+        Node erase_node{key, o};
         getblock(0, bl);
         Address block_pos = 0;
         while (!bl.num || bl.nodes[bl.num - 1] < erase_node) {
@@ -208,7 +189,7 @@ public:
             getblock(bl.next, bl);
         }
         int erase_pos = lower_bound(bl.nodes, bl.nodes + bl.num, erase_node) - bl.nodes;
-        assert(bl.nodes[erase_pos] == erase_node);
+        if (bl.nodes[erase_pos] != erase_node) throw NoErase();
         Node temp = erase_node;
         Node record;
         for (int i = erase_pos + 1; i < bl.num; ++i) {
@@ -230,8 +211,8 @@ public:
         closefile
     }
 
-    vector<TValue> findVector(const string &_key) {
-        pair<int, int> key = hash(_key);
+    vector<TValue> findVector(const Sdebug &_key) {
+        TKey key = hash(_key);
         openfile
         vector<TValue> v;
         Block bl;
@@ -240,22 +221,23 @@ public:
             if (bl.next == -1) break;
             getblock(bl.next, bl);
         }
-
-        vector<TKey> onlykey;
-        for (int i = 0; i < bl.num; ++i) {
-            onlykey.push_back(bl.nodes[i].first);
+        while (true) {
+            vector<TKey> onlykey;
+            for (int i = 0; i < bl.num; ++i) {
+                onlykey.push_back(bl.nodes[i].first);
+            }
+            int find_pos = lower_bound(onlykey.begin(), onlykey.end(), key) - onlykey.begin();
+            int find_max = upper_bound(onlykey.begin(), onlykey.end(), key) - onlykey.begin();
+            for (int i = find_pos; i < find_max; ++i) {
+                v.push_back(bl.nodes[i].second);
+            }
+            if (bl.next == -1 || find_max != bl.num) {
+                closefile
+                return v;
+            }
+            getblock(bl.next, bl);
         }
-
-        int find_pos = lower_bound(onlykey.begin(), onlykey.end(), key) - onlykey.begin();
-        int find_max = upper_bound(onlykey.begin(), onlykey.end(), key) - onlykey.begin();
-        for (int i = find_pos; i < find_max; ++i) {
-            v.push_back(bl.nodes[i].second);
-        }
-        if (find_max != bl.num) {
-            closefile
-            return v;
-        }
-        Block bl_next;
+        /*Block bl_next;
         getblock(bl.next, bl_next);
         if (bl.next == -1) {
             closefile
@@ -270,7 +252,7 @@ public:
             v.push_back(bl_next.nodes[i].second);
         }
         closefile
-        return v;
+        return v;*/
     }
 
     vector<TValue> findAll() {
@@ -278,7 +260,7 @@ public:
         vector<TValue> v;
         Block bl;
         getblock(0, bl);
-        while(true) {
+        while (true) {
             for (int i = 0; i < bl.num; ++i) {
                 v.push_back(bl.nodes[i].second);
             }
@@ -288,6 +270,24 @@ public:
         closefile
         return v;
     }
+
+# ifdef treedebug
+
+    void printVector(TKey k) {
+        vector<TValue> v = findVector(k);
+        for (auto i : v)
+            cout << i << " ";
+        cout << '\n';
+    }
+
+    void printAll() {
+        vector<TValue> v = findAll();
+        for (auto i : v)
+            cout << i << " ";
+        cout << '\n';
+    }
+
+#endif
 
 #endif
 

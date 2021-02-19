@@ -11,7 +11,7 @@
 using namespace std;
 
 typedef string FileName;
-typedef long Address;
+typedef int Address;
 //constexpr int I = sizeof(int);
 //constexpr int L = sizeof(long);
 void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我猜测无关紧要。
