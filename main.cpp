@@ -11,9 +11,9 @@ class ErrorOccur {};
 
 //-------------------------------------------------
 
-ofstream ffout("log.dat", ios::app);
-ofstream ff("financelog.dat", ios::app);
-ofstream fo("operation.dat", ios::app | ios::binary);
+ofstream main_log("log.dat", ios::app);
+ofstream finance_log("financelog.dat", ios::app);
+ofstream operation_log("operation.dat", ios::app | ios::binary);
 
 UserData user_data;
 BookData book_data;
@@ -523,7 +523,7 @@ void book::show(BookInfoType _infotype, StringType _info) {
     Success;
 }
 
-void book::showFinance(Times _time) {//TODO
+void book::showFinance(Times _time) {
     tool::checkAuthority(7);
     fstream finance_file("finance.dat", ios::binary | ios::in | ios::out);
     Price plus = 0, minus = 0;
@@ -557,7 +557,6 @@ void book::showFinance(Times _time) {//TODO
 
 void book::buy(ISBN _isbn, Quantity _quantity) {
     tool::checkAuthority(1);
-//    FindAndPopSelectedBook
     Book tbook;
     try {
         tbook = book_data.find(_isbn);
@@ -569,9 +568,7 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
         Error("NO THAT MANY BOOKS, ONLY " << tbook.quantity << " BOOKS");
         throw ErrorOccur();
     }
-//    book_data.erase(_isbn);
     tbook.quantity -= _quantity;
-//    book_data.insert(tbook);
     book_data.change(_isbn, tbook);
     Price total_price = _quantity * tbook.price;
     tool::addFinance('+', total_price);
@@ -611,23 +608,15 @@ void sys::reportFinance() {//问题：未算总价，总价本来是可以记录
 
 void sys::reportEmployee() {
     tool::checkAuthority(7);
-//    vector<Operation> cache;
+OFLUSHLOG;
     map<User_id, vector<Operation> > employeesOperations;
     ifstream fin("operation.dat", ios::binary | ios::in);
     fin.seekg(0);
-
     while (true) {
-//        cout << __LINE__ << endl;
-
         Operation temp;
-//        cout << "tellg" << fin.tellg()<<endl;
         fread(fin, temp);
-//        cout << "tellg" << fin.tellg()<<endl;
         if (!fin) break;
-//cout << __LINE__ << endl;
-//        cache.push_back(temp);
         if (temp.authority == 3) {
-//            cout << __LINE__ << endl;
             employeesOperations[temp.user_id].push_back(temp);
         }
     }
@@ -655,6 +644,7 @@ void sys::reportEmployee() {
 void sys::reportMyself() {
     tool::checkAuthority(3);
     vector<Operation> myop;
+    OFLUSHLOG;
     ifstream fin("operation.dat", ios::binary | ios::in);
     fin.seekg(0);
     while (true) {
@@ -668,7 +658,7 @@ void sys::reportMyself() {
         cout << YELLOW << "Date:" << oper.date <<
              "  Time:" << oper.time << END << '\n';
         cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
-        cout << YELLOW << "Opertion:" << oper.input << END << '\n';
+        cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
     }
     cout << CUT;
     Success;

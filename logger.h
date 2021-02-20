@@ -29,14 +29,14 @@ using namespace std;
 #define ACT_INFO   __DATE__ << " " << __TIME__ << ':' << __FUNCTION__
 
 #define CUT "---------------------------------------------\n"
-#define Info(x)    ffout << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'
-#define Success    ffout << GREEN  << ACT_INFO  << ": success: " << __FUNCTION__ << END << '\n' << CUT
-#define Error(x)   ffout << RED    << ACT_INFO  << ": error: " << x << END << '\n' << CUT
+#define Info(x)    main_log << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'
+#define Success    main_log << GREEN  << ACT_INFO  << ": success: " << __FUNCTION__ << END << '\n' << CUT
+#define Error(x)   main_log << RED    << ACT_INFO  << ": error: " << x << END << '\n' << CUT
 
 #define CHECKSTACK  user_vector.empty()?"NULL":
-#define USER ffout << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
-#define BOOK ffout << YELLOW << "selected book_id=" <<( CHECKSTACK user_vector.back().selected_book)  << END << '\n'
-#define FLUSHLOG ffout << flush
+#define USER main_log << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
+#define BOOK main_log << YELLOW << "selected book_id=" <<( CHECKSTACK user_vector.back().selected_book)  << END << '\n'
+#define FLUSHLOG main_log << flush
 
 typedef char Input[300];
 typedef char TorD [50];
@@ -56,14 +56,15 @@ struct Operation{
                                                                                strcpy(date, __DATE__);
     }
 };
-#define OInfo {fo.seekp(0,ios::end); \
-fwrite(fo, Operation(user_vector.back().user_id, user_vector.back().authority, user_vector.back().selected_book, input)); \
+#define OInfo {operation_log.seekp(0,ios::end); \
+fwrite(operation_log, Operation(user_vector.back().user_id, user_vector.back().authority, user_vector.back().selected_book, input)); \
 }
+#define OFLUSHLOG operation_log << flush
 
-#define FUSER ff << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
-#define FFLUSHLOG ff << flush
-#define FCUT ff << CUT
-#define FInfo(x) FCUT;FUSER;ff << YELLOW  << __DATE__ << " " << __TIME__ << " " << __FUNCTION__ << ':' << x << END << '\n'
+#define FUSER finance_log << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
+#define FFLUSHLOG finance_log << flush
+#define FCUT finance_log << CUT
+#define FInfo(x) FCUT;FUSER;finance_log << YELLOW  << __DATE__ << " " << __TIME__ << " " << __FUNCTION__ << ':' << x << END << '\n'
 
 
 #define CODE_LOGGER_H
