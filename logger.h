@@ -39,13 +39,14 @@ using namespace std;
 #define FLUSHLOG ffout << flush
 
 typedef char Input[300];
+typedef char TorD [50];
 struct Operation{
     cUser_id user_id;
     Authority authority;
     cISBN selected_book;
     Input input;
-    Input time;
-    Input date;
+    TorD time;
+    TorD date;
     Operation() = default;
     Operation(const char *_userId, Authority authority, char *_selected_book, string _operation) : authority(authority)
                                                                            {strcpy(user_id,_userId);
@@ -55,9 +56,9 @@ struct Operation{
                                                                                strcpy(date, __DATE__);
     }
 };
-#define OInfo {fo.seekp(0,ios::end);/*cout << "tellp"<<fo.tellp()<<endl;*/ \
+#define OInfo {fo.seekp(0,ios::end); \
 fwrite(fo, Operation(user_vector.back().user_id, user_vector.back().authority, user_vector.back().selected_book, input)); \
-/*cout << "tellp"<<fo.tellp()<<endl;*/}
+}
 
 #define FUSER ff << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
 #define FFLUSHLOG ff << flush

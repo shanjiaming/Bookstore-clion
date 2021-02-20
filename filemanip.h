@@ -12,8 +12,7 @@ using namespace std;
 
 typedef string FileName;
 typedef int Address;
-//constexpr int I = sizeof(int);
-//constexpr int L = sizeof(long);
+
 void fcreate(FileName fn);
 
 #define openfile file.open(fileName, ios::in | ios::out | ios::binary);assert(file);

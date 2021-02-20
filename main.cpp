@@ -4,7 +4,8 @@
 #include "BookAndUser.h"
 #include "logger.h"
 
-class ErrorOccur {};
+class ErrorOccur {
+};
 
 //-------------------------------------------------
 
@@ -48,23 +49,6 @@ void printBookVector(vector<Book> v_book) {//TODO sorted by isbn
              << i.quantity << endl;
     }
 }
-
-#define FindSelectedBook  \
-    if (user_vector.empty() || user_vector.back().selected_book == "") {\
-        throw ErrorOccur();\
-    }                  \
-    cISBN& usb = user_vector.back().selected_book; \
-    Book tbook = book_data.find(usb);                                   \
-
-#define FindAndPopSelectedBook  \
-    if (user_vector.empty() || user_vector.back().selected_book == "") {\
-        throw ErrorOccur();\
-    }                  \
-    cISBN& usb = user_vector.back().selected_book; \
-    Book tbook = book_data.find(usb);   \
-    book_data.erase(usb);
-
-//fileName functions
 
 namespace file {
 
@@ -181,8 +165,8 @@ void function_chooser() {
     //book
     static const string
             _ISBN = "([^ ]{1,20})", csISBN = " " + _ISBN, e_ISBN =
-            " -ISBN=" + _ISBN,//TODO ISBN 带空格吗？空白字符之类的要底要限多死？严重关心正则表达式。
-    _book_name = "\"(.{1,60}?)\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
+            " -ISBN=" + _ISBN,
+            _book_name = "\"(.{1,60}?)\"", book_name = " " + _book_name, e_book_name = " -name=" + _book_name,
             _author = "\"(.{1,60}?)\"", author = " " + _author, e_author = " -author=" + _author,
             _keyword = "\"([^ ]{1,60}?)\"", keyword = " " + _keyword, e_keyword = " -keyword=" + _keyword,
             _price = "(\\d+(?:\\.\\d+)?)", price = " " + _price, e_price = " -price=" + _price,
@@ -215,7 +199,7 @@ void function_chooser() {
             rule_quit("^quit$");
 
     getline(cin, input);
-    input.erase(0,input.find_first_not_of(" "));
+    input.erase(0, input.find_first_not_of(" "));
     input.erase(input.find_last_not_of(" ") + 1);
     if (cin.eof()) exit(0);
     if (input == "") return;
@@ -307,24 +291,31 @@ void function_chooser() {
         }
         BookInfoType l_infotype;
         string l_info;
+        bool flag = 0;
         if (regex_search(input, parameter, rule_show_ISBN)) {
             l_infotype = t_ISBN;
             l_info = parameter.str(1);
+            flag = 1;
         }
         if (regex_search(input, parameter, rule_show_name)) {
             l_infotype = t_Book_name;
             l_info = parameter.str(1);
+            flag = 1;
         }
         if (regex_search(input, parameter, rule_show_author)) {
             l_infotype = t_Author;
             l_info = parameter.str(1);
+            flag = 1;
         }
         if (regex_search(input, parameter, rule_show_keyword)) {
             l_infotype = t_Keyword;
             l_info = parameter.str(1);
+            flag = 1;
         }
-        book::show(l_infotype, l_info);
-        return;
+        if (flag) {
+            book::show(l_infotype, l_info);
+            return;
+        }
     }
 
     if (regex_search(input, parameter, rule_buy)) {
@@ -482,8 +473,8 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     strcpy(usb2, usb);
     if (_isbn != "") {
 //        strcpy(usb, _isbn.c_str());
-        for(auto &u : user_vector){
-            if (!strcmp(u.selected_book, usb2)){
+        for (auto &u : user_vector) {
+            if (!strcmp(u.selected_book, usb2)) {
                 strcpy(u.selected_book, _isbn.c_str());
             }
         }
@@ -500,12 +491,12 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
         vector<Keyword> ret;
         stringstream ss(_keyword);
         string oneword;
-        while (getline(ss, oneword, '|')){
+        while (getline(ss, oneword, '|')) {
             ret.push_back(oneword);
         }
         sort(ret.begin(), ret.end());
         auto temp = unique(ret.begin(), ret.end());
-        if(temp != ret.end()){
+        if (temp != ret.end()) {
             Error("REPEATED KEYWORDS");
             throw ErrorOccur();
         }
@@ -641,7 +632,7 @@ void sys::reportEmployee() {
     checkAuthority(7);
 //    vector<Operation> cache;
     map<User_id, vector<Operation> > employeesOperations;
-    ifstream fin("operation.dat", ios::binary|ios::in);
+    ifstream fin("operation.dat", ios::binary | ios::in);
     fin.seekg(0);
 
     while (true) {
@@ -664,11 +655,11 @@ void sys::reportEmployee() {
     cout << CUT << '\n';
     for (auto employeeOperations : employeesOperations) {
 //        cout << __LINE__ << endl;
-        cout << CUT << YELLOW << "Employee: UserID=" << employeeOperations.first << END << '\n'<< CUT;
-        for (auto oper : employeeOperations.second){
+        cout << CUT << YELLOW << "Employee: UserID=" << employeeOperations.first << END << '\n' << CUT;
+        for (auto oper : employeeOperations.second) {
 //            cout << __LINE__ << endl;
             cout << YELLOW << "Date:" << oper.date <<
-             "  Time:" << oper.time << END << '\n';
+                 "  Time:" << oper.time << END << '\n';
             cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
             cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
         }
@@ -683,20 +674,20 @@ void sys::reportEmployee() {
 void sys::reportMyself() {
     checkAuthority(3);
     vector<Operation> myop;
-    ifstream fin("operation.dat", ios::binary|ios::in);
+    ifstream fin("operation.dat", ios::binary | ios::in);
     fin.seekg(0);
-    while (true){
+    while (true) {
         Operation temp;
         fread(fin, temp);
-        if(!fin) break;
+        if (!fin) break;
         if (!strcmp(temp.user_id, user_vector.back().user_id))myop.push_back(temp);
     }
     cout << CUT;
-    for (auto oper : myop){
+    for (auto oper : myop) {
         cout << YELLOW << "Date:" << oper.date <<
              "  Time:" << oper.time << END << '\n';
         cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
-        cout << YELLOW << "Opertion:" << oper.input << END << '\n' ;
+        cout << YELLOW << "Opertion:" << oper.input << END << '\n';
     }
     cout << CUT;
     Success;
