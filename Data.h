@@ -18,7 +18,6 @@ private:
 public:
     Data<T>(const FileName &_fileName) : fileName(_fileName){
         fcreate(_fileName);
-        //TODO 未考虑initialize。需要在打开模式的地方抉择是否进行文件创建。
     }
 
 

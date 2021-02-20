@@ -1,11 +1,13 @@
-//#define debug
+//#define FileIO { \
+freopen("../../Data/AdvancedDataSet/testcase1/1.in", "r", stdin);\
+freopen("../myout.txt", "w", stdout);\
+};
 //--------------------------------------------------
 
 #include "BookAndUser.h"
 #include "logger.h"
 
-class ErrorOccur {
-};
+class ErrorOccur {};
 
 //-------------------------------------------------
 
@@ -107,9 +109,8 @@ namespace sys {
 
 
 int main() {
-#ifdef debug
-    freopen("../../Data/AdvancedDataSet/testcase1/1.in", "r", stdin);
-    freopen("../myout.txt", "w", stdout);
+#ifdef FileIO
+    FileIO
 #endif
     initialize();
     while (true) {
@@ -538,7 +539,8 @@ void book::import(Quantity _quantity, Price _price) {
 
 void book::show(BookInfoType _infotype, StringType _info) {
     checkAuthority(1);
-    printBookVector((_infotype == t_ISBN && _info == "") ? book_data.findAll() : book_data.showType(_infotype, _info));
+    printBookVector(
+            (_infotype == t_ISBN && _info == "") ? book_data.findAll() : book_data.showType(_infotype, _info));
     Success;
 }
 

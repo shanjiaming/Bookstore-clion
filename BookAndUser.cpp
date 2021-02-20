@@ -45,29 +45,21 @@ void BookData::erase(const ISBN &key) {
 }
 
 void BookData::change(const ISBN &key, const Book &b) {
-    //待优化，重合两个地址，可是不知道为什么总会报错
-    {
-        Address a = book_isbn_table.find(key);
-        Book b_erase = data_book.find(a);
-        data_book.erase(a);
-        book_isbn_table.erase(b_erase.isbn, a);
-        book_name_table.erase(b_erase.book_name, a);
-        book_author_table.erase(b_erase.author, a);
-        vector<Keyword> ekeywords = splitKeyword(b_erase.keyword);
-        for (Keyword oneword : ekeywords) {
-            book_keyword_table.erase(oneword, a);
-        }
-    }
-    {
-        Address a = data_book.insert(b);
-        book_isbn_table.insert(b.isbn, a);
-        book_name_table.insert(b.book_name, a);
-        book_author_table.insert(b.author, a);
-        vector<Keyword> keywords = splitKeyword(b.keyword);
-        for (Keyword oneword : keywords) {
-            book_keyword_table.insert(oneword, a);
-        }
-    }
+    Address a = book_isbn_table.find(key);
+    Book b_erase = data_book.find(a);
+    book_isbn_table.erase(b_erase.isbn, a);
+    book_name_table.erase(b_erase.book_name, a);
+    book_author_table.erase(b_erase.author, a);
+    vector<Keyword> ekeywords = splitKeyword(b_erase.keyword);
+    for (Keyword oneword : ekeywords)
+        book_keyword_table.erase(oneword, a);
+    book_isbn_table.insert(b.isbn, a);
+    book_name_table.insert(b.book_name, a);
+    book_author_table.insert(b.author, a);
+    vector<Keyword> keywords = splitKeyword(b.keyword);
+    for (Keyword oneword : keywords)
+        book_keyword_table.insert(oneword, a);
+    data_book.change(a, b);
 }
 
 Book BookData::find(const ISBN &key) {
