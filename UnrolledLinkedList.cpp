@@ -41,12 +41,12 @@ TKM UnrolledLinkedList::hash(TKey arg) {
 #endif
 
 
-void UnrolledLinkedList::getblock(Address x, Block &b) {
+void UnrolledLinkedList::getblock(TValue x, Block &b) {
     file.seekp(x);
     fread(file, b);
 }
 
-void UnrolledLinkedList::putblock(Address x, Block &b) {
+void UnrolledLinkedList::putblock(TValue x, Block &b) {
     file.seekp(x);
     fwrite(file, b);
 };
@@ -65,7 +65,7 @@ TValue UnrolledLinkedList::find(const TKey &key) {
     throw MultipleElement();
 }
 
-void UnrolledLinkedList::insert(const TKey &_key, const Address &o) {
+void UnrolledLinkedList::insert(const TKey &_key, const TValue &o) {
     TKM key = hash(_key);
     openfile
     Block bl;
@@ -115,7 +115,7 @@ void UnrolledLinkedList::insert(const TKey &_key, const Address &o) {
     closefile
 }
 
-void UnrolledLinkedList::erase(const TKey &_key, const Address &o) {
+void UnrolledLinkedList::erase(const TKey &_key, const TValue &o) {
     TKM key = hash(_key);
     openfile
     Block bl;
@@ -139,7 +139,7 @@ void UnrolledLinkedList::erase(const TKey &_key, const Address &o) {
     if (bl.next != -1) {//这么写可读性很不好，然而是getblock没法直接返回值的锅。
         Block bl_next;
         getblock(bl.next, bl_next);
-        if (bl.num + bl_next.num <= Merge) {//merge
+        if (bl.num + bl_next.num <= Nmax) {//merge
             for (int i = 0; i < bl_next.num; ++i) {
                 bl.nodes[i + bl.num] = bl_next.nodes[i];
             }

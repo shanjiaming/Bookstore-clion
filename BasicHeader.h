@@ -101,12 +101,6 @@ struct User : CoreUser {
     cUser_name user_name;
 
     User() = default;
-
-//    User(const cUser_id &_user_id, const cPasswd &_passwd, const cUser_name &_user_name, Authority _authority = 0)
-//            : CoreUser(_user_id, _authority) {
-//        strcpy(user_name, _user_name);
-//        strcpy(passwd, _passwd);
-//    }
     User(const User_id &_user_id, const Passwd &_passwd, const User_name &_user_name, Authority _authority = 0)
             : CoreUser(_user_id, _authority) {
         strcpy(user_name, _user_name.c_str());
@@ -116,18 +110,10 @@ struct User : CoreUser {
 
 typedef char Sign;
 
-struct Finance {
-    Finance(Sign sign, Price price) : sign(sign), price(price) {}
-
-    Sign sign;
-    Price price;
-
-};
 
 
 
-
-typedef int Time;
+typedef int Times;
 
 
 #endif //CODE_BASICHEADER_H

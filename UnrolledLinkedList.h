@@ -40,7 +40,6 @@ using TKey = string;
 using TKM = tuple<int, int, int>;
 using TValue = Address;
 #endif
-
 class UnrolledLinkedList {
 private:
     FileName fileName;
@@ -53,12 +52,12 @@ private:
     TKM hash(TKey arg);
 
     static const int Nmax = 400;
-    static const int Merge = Nmax;//不这样似乎会删出num=0块，下一个满块的bug
 
     struct Block {
         friend UnrolledLinkedList;
-        int next = -1, num = 0;
-        Node nodes[Nmax];
+        Address next = -1;      //next means the address of next Block in the file.
+        int num = 0;            //num means how many valid nodes are there in this Block.
+        Node nodes[Nmax];       //This means 0 <= num <= Nmax
     };
 
     void getblock(Address x, Block &b);
@@ -74,15 +73,16 @@ public:
 
     TValue find(const TKey &key);
 
-    void insert(const TKey &_key, const Address &o);
+    void insert(const TKey &_key, const TValue &o);
 
-    void erase(const TKey &_key, const Address &o);
+    void erase(const TKey &_key, const TValue &o);
 
     vector<TValue> findVector(const TKey &_key);
 
     vector<TValue> findAll();
 
 # ifdef IO
+
 public:
 
     void printVector(TKey k);
@@ -90,7 +90,6 @@ public:
     void printAll();
 
 #endif
-
 
 };
 

@@ -28,40 +28,19 @@ string input;
 
 
 
-void checkAuthority(Authority x) {
-    USER;
-    if (user_vector.empty()) {
-        Error("NO USER LOGIN YET");
-        throw ErrorOccur();
-    }
-    if (user_vector.back().authority < x) {
-        Error("NO AUTHORITY");
-        throw ErrorOccur();
-    }
-}
+void initialize();
 
-void printBookVector(vector<Book> v_book) {//TODO sorted by isbn
-    sort(v_book.begin(), v_book.end());
-    if (v_book.empty()) {
-        cout << endl;
-        return;
-    }
-    for (Book i : v_book) {
-        cout << i.isbn << '\t' << i.book_name << '\t' << i.author << '\t' << i.keyword << '\t' << i.price << '\t'
-             << i.quantity << endl;
-    }
-}
+void function_chooser();
 
-namespace file {
+namespace tool {
+
+    void checkAuthority(Authority x);
+
+    void printBookVector(vector<Book> v_book);
 
     void addFinance(Sign, Price);
 
 }
-//-------------------------------------------------
-
-void initialize();
-
-void function_chooser();
 
 namespace user {
 
@@ -89,7 +68,7 @@ namespace book {
 
     void show(BookInfoType, string);
 
-    void showFinance(Time);
+    void showFinance(Times);
 
     void buy(ISBN, Quantity);
 
@@ -362,7 +341,7 @@ void user::su(User_id _user_id, Passwd _passwd) {
         throw ErrorOccur();
     }
     if (_passwd == "") {
-        checkAuthority(l_user.authority * 2 + 1);
+        tool::checkAuthority(l_user.authority * 2 + 1);
     } else {
         if (l_user.passwd != _passwd) {
             Error("WRONG PASSWD");
@@ -374,14 +353,14 @@ void user::su(User_id _user_id, Passwd _passwd) {
 }
 
 void user::logout() {
-    checkAuthority(1);
+    tool::checkAuthority(1);
     user_vector.pop_back();
     Success;
 }
 
 void user::useradd(User_id _user_id, Passwd _passwd, Authority _authority, User_name _user_name) {
 
-    checkAuthority(_authority * 2 + 1);
+    tool::checkAuthority(_authority * 2 + 1);
     try {
         user_data.find(_user_id);
         Error("ALREADY EXISTS");
@@ -399,7 +378,7 @@ void user::registerAccount(User_id _user_id, Passwd _passwd, User_name _user_nam
 }
 
 void user::deleteAccount(User_id _user_id) {
-    checkAuthority(7);
+    tool::checkAuthority(7);
     try {
         user_data.find(_user_id);
         for (auto each_login : user_vector) {
@@ -426,9 +405,9 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
         throw ErrorOccur();
     }
     if (_old_passwd == "") {
-        checkAuthority(7);
+        tool::checkAuthority(7);
     } else {
-        checkAuthority(1);
+        tool::checkAuthority(1);
         if (l_user.passwd != _old_passwd) {
             Error("WRONG PASSWORD");
             throw ErrorOccur();
@@ -442,7 +421,7 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
 
 
 void book::select(ISBN _isbn) {
-    checkAuthority(3);
+    tool::checkAuthority(3);
     try {
         book_data.find(_isbn);
     } catch (NotFound) {
@@ -454,7 +433,7 @@ void book::select(ISBN _isbn) {
 
 void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price) {
     BOOK;
-    checkAuthority(3);//FIXME
+    tool::checkAuthority(3);//FIXME
 //    FindAndPopSelectedBook
     if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
         Error("NO SELECTED BOOK");
@@ -515,7 +494,7 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
 
 void book::import(Quantity _quantity, Price _price) {
     BOOK;
-    checkAuthority(3);
+    tool::checkAuthority(3);
 //    FindAndPopSelectedBook
     if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
         Error("NO SELECTED BOOK");
@@ -528,7 +507,7 @@ void book::import(Quantity _quantity, Price _price) {
     tbook.quantity += _quantity;
 //    book_data.insert(tbook);
     book_data.change(usb, tbook);
-    file::addFinance('-', _price);
+    tool::addFinance('-', _price);
     Success;
 
 
@@ -538,14 +517,14 @@ void book::import(Quantity _quantity, Price _price) {
 }
 
 void book::show(BookInfoType _infotype, StringType _info) {
-    checkAuthority(1);
-    printBookVector(
+    tool::checkAuthority(1);
+    tool::printBookVector(
             (_infotype == t_ISBN && _info == "") ? book_data.findAll() : book_data.showType(_infotype, _info));
     Success;
 }
 
-void book::showFinance(Time _time) {//TODO
-    checkAuthority(7);
+void book::showFinance(Times _time) {//TODO
+    tool::checkAuthority(7);
     fstream finance_file("finance.dat", ios::binary | ios::in | ios::out);
     Price plus = 0, minus = 0;
     if (_time == -1) {
@@ -555,7 +534,7 @@ void book::showFinance(Time _time) {//TODO
         fread(finance_file, minus);
         finance_file.close();
     } else {
-        Time t = _time;
+        Times t = _time;
         for (finance_file.seekg(0, ios::end); t--;) {
             Price temp;
             char c;
@@ -577,7 +556,7 @@ void book::showFinance(Time _time) {//TODO
 
 
 void book::buy(ISBN _isbn, Quantity _quantity) {
-    checkAuthority(1);
+    tool::checkAuthority(1);
 //    FindAndPopSelectedBook
     Book tbook;
     try {
@@ -595,7 +574,7 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
 //    book_data.insert(tbook);
     book_data.change(_isbn, tbook);
     Price total_price = _quantity * tbook.price;
-    file::addFinance('+', total_price);
+    tool::addFinance('+', total_price);
     cout << total_price << endl;
     Success;
     FInfo("  BookISBN=" << _isbn << "  Quantity=" << _quantity << "  Income Per Book=" << tbook.price
@@ -604,7 +583,7 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
 
 
 void sys::reportFinance() {//问题：未算总价，总价本来是可以记录于Basic文件中的。
-    checkAuthority(7);
+    tool::checkAuthority(7);
     FFLUSHLOG;
     ifstream fin("financelog.dat");
     string s;
@@ -631,7 +610,7 @@ void sys::reportFinance() {//问题：未算总价，总价本来是可以记录
 }
 
 void sys::reportEmployee() {
-    checkAuthority(7);
+    tool::checkAuthority(7);
 //    vector<Operation> cache;
     map<User_id, vector<Operation> > employeesOperations;
     ifstream fin("operation.dat", ios::binary | ios::in);
@@ -661,7 +640,7 @@ void sys::reportEmployee() {
         for (auto oper : employeeOperations.second) {
 //            cout << __LINE__ << endl;
             cout << YELLOW << "Date:" << oper.date <<
-                 "  Time:" << oper.time << END << '\n';
+                 "  Times:" << oper.time << END << '\n';
             cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
             cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
         }
@@ -674,7 +653,7 @@ void sys::reportEmployee() {
 }
 
 void sys::reportMyself() {
-    checkAuthority(3);
+    tool::checkAuthority(3);
     vector<Operation> myop;
     ifstream fin("operation.dat", ios::binary | ios::in);
     fin.seekg(0);
@@ -687,7 +666,7 @@ void sys::reportMyself() {
     cout << CUT;
     for (auto oper : myop) {
         cout << YELLOW << "Date:" << oper.date <<
-             "  Time:" << oper.time << END << '\n';
+             "  Times:" << oper.time << END << '\n';
         cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
         cout << YELLOW << "Opertion:" << oper.input << END << '\n';
     }
@@ -696,7 +675,7 @@ void sys::reportMyself() {
 }
 
 void sys::log() {
-    checkAuthority(7);
+    tool::checkAuthority(7);
     FLUSHLOG;
     ifstream fin("log.dat");
     string s;
@@ -708,8 +687,31 @@ void sys::log() {
     Success;
 }
 
+void tool::checkAuthority(Authority x) {
+    USER;
+    if (user_vector.empty()) {
+        Error("NO USER LOGIN YET");
+        throw ErrorOccur();
+    }
+    if (user_vector.back().authority < x) {
+        Error("NO AUTHORITY");
+        throw ErrorOccur();
+    }
+}
 
-void file::addFinance(Sign _c, Price _price) {
+void tool::printBookVector(vector<Book> v_book) {//TODO sorted by isbn
+    sort(v_book.begin(), v_book.end());
+    if (v_book.empty()) {
+        cout << endl;
+        return;
+    }
+    for (Book i : v_book) {
+        cout << i.isbn << '\t' << i.book_name << '\t' << i.author << '\t' << i.keyword << '\t' << i.price << '\t'
+             << i.quantity << endl;
+    }
+}
+
+void tool::addFinance(Sign _c, Price _price) {
     int I = ((_c == '+') ? 0 : sizeof(Price));
 //    finance_vector.push_back(Finance(_c, _price));
     fstream finance_file("finance.dat", ios::binary | ios::in | ios::out);
