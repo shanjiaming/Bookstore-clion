@@ -51,7 +51,7 @@ private:
 
     TKM hash(TKey arg);
 
-    static const int Nmax = 400;
+    static const int Nmax = 4;
 
     struct Block {
         friend UnrolledLinkedList;

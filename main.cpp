@@ -18,7 +18,7 @@ ofstream fo("operation.dat", ios::app | ios::binary);
 UserData user_data;
 BookData book_data;
 
-vector<CoreUser> user_vector;
+vector<CoreUser> user_vector;//record users who are login.
 
 string input;
 
@@ -640,7 +640,7 @@ void sys::reportEmployee() {
         for (auto oper : employeeOperations.second) {
 //            cout << __LINE__ << endl;
             cout << YELLOW << "Date:" << oper.date <<
-                 "  Times:" << oper.time << END << '\n';
+                 "  Time:" << oper.time << END << '\n';
             cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
             cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
         }
@@ -666,7 +666,7 @@ void sys::reportMyself() {
     cout << CUT;
     for (auto oper : myop) {
         cout << YELLOW << "Date:" << oper.date <<
-             "  Times:" << oper.time << END << '\n';
+             "  Time:" << oper.time << END << '\n';
         cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
         cout << YELLOW << "Opertion:" << oper.input << END << '\n';
     }

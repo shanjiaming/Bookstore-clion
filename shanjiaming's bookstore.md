@@ -6,35 +6,74 @@ written by shanjiaming
 
 ----
 
-Program Structure：
+## Program Structure：
 
-1. Contain Structure 
+### Contain Structure 
 
 - main.cpp
 
-  - BookAndUser.h
-
-    1. UnrolledLinkedList.h
-
-    2. Data.h
-  
-       - BasicHeader.h
-
   - logger.h (tool header)
-    
+
+  - BookAndUser
+
+    1. UnrolledLinkedList
+  
+    2. Data.h
+
+       - BasicHeader.h
   
 
-(all include filemanip.h (tool header))
+__Note__: all include `filemanip.h` (tool header)
 
-## BasicHeader
+## BasicHeader.h
 
 - provide simpest struct about user `CoreUser` `User` and book `Book`. Also, some typedef are given.
 
   (some structs begin with c, meaning they are char[*], version not begin with c are strings)
 
-----
+## filemanip.h
 
-## Main
+- provide tool functions to manipulate file. Also, some typedef are given.
+```
+typedef string FileName;
+typedef int Address;
+
+inline void fcreate(FileName fn);
+
+#define openfile ...
+#define closefile ...
+
+<T>
+void fwrite(ostream &_file, const T &t);
+
+<T>
+void fread(istream &_file, T &t);
+```
+
+## Logger.h
+
+- provide tool functions to manipulate log.  __Purely automatic__. __Expandable__ with almost __0 cost__.
+
+  (**\_\_FUNCTION\_\_** is __GOD__!!!)
+
+```
+#define CUT
+#define Info(x)
+#define Success
+#define Error(x)
+#define USER
+#define BOOK 
+#define FLUSHLOG
+#define FUSER
+#define FFLUSHLOG
+#define FCUT
+#define FInfo(x)
+struct Operation;
+```
+
+  
+
+## Main.cpp
 
 - initialize`initialize()`
 
@@ -45,60 +84,60 @@ Program Structure：
 
 
   ```
-  namespace user {
-      void su(User_id, Passwd);
-      void logout();
-      void useradd(User_id, Passwd, Authority, User_name);
-      void registerAccount(User_id, Passwd, User_name);
-      void deleteAccount(User_id);
-      void passwd(User_id, Passwd, Passwd);
-  }
+namespace user {
+    void su(User_id, Passwd);
+    void logout();
+    void useradd(User_id, Passwd, Authority, User_name);
+    void registerAccount(User_id, Passwd, User_name);
+    void deleteAccount(User_id);
+    void passwd(User_id, Passwd, Passwd);
+}
   ```
 
 
   - functions in `book` namespace
   ```
-  namespace book {
-      void select(ISBN);
-      void modify(ISBN, Book_name, Author, Keyword, Price);
-      void import(Quantity, Price);
-      void show(BookInfoType, string);
-      void showFinance(Time);
-      void buy(ISBN, Quantity);
-  }
+namespace book {
+    void select(ISBN);
+    void modify(ISBN, Book_name, Author, Keyword, Price);
+    void import(Quantity, Price);
+    void show(BookInfoType, string);
+    void showFinance(Times);
+    void buy(ISBN, Quantity);
+}
   ```
 
   - functions in `sys` namespace
 
   ```
-  namespace sys {
-    void reportFinance();
-    void reportEmployee();
-    void reportMyself();
-    void log();
-  }
+namespace sys {
+  void reportFinance();
+  void reportEmployee();
+  void reportMyself();
+  void log();
+}
   ```
 
    - functions in `tool` namespace
 
   ```
-  namespace tool {
-    void checkAuthority(Authority x);
-    void printBookVector(vector<Book> v_book);
-    void addFinance(Sign, Price);
-  }
+namespace tool {
+  void checkAuthority(Authority x);
+  void printBookVector(vector<Book> v_book);
+  void addFinance(Sign, Price);
+}
   ```
 
 - provide data stuctures:
 
-  ```
-  UserData user_data;
-  BookData book_data;
-  vector<CoreUser> user_vector;
-  ```
-  
+```
+UserData user_data;
+BookData book_data;
+vector<CoreUser> user_vector;//record users who are login.
+```
+
   While class `UserData` and `BookData` are defined in `BookAndUser.h`. Let's see what it can do.
-  
+
   
 
 __Note__: The pivotal logic of main is to use `function_chooser` to analyse the input string by regex, and then go to `user`, `book`, or `sys` functions to do the back-end work. In the work checked by OJ, it only uses the two class in BookAndUser, which has very few interfaces.	 
@@ -151,7 +190,7 @@ Almost the same.
 
 After that, let's see what are class `Data` and `UnrolledLinkedList`.
 
-## Data
+## Data.h
 
 ```
 template <class T>
@@ -178,6 +217,7 @@ Note: it does not have .cpp file. This is because usually, the definition of a t
 It functions like a map<string, int> that can be saved in a file permanently.
 
 Two switchs. Default: close
+
 ```
 #define Template
 #define IO
@@ -215,13 +255,13 @@ Otherwise, you should rewrite `TKM hash(TKey)` to make the ULL work correctly. S
 
 ### Structure
 ```
-    using Node = pair<TKM, TValue>;   
-    struct Block {    
-        friend UnrolledLinkedList;        
-        Address next = -1;      //next means the address of next Block in the file.        
-        int num = 0;            //num means how many valid nodes are there in this Block.
-        Node nodes[Nmax];       //This means 0 <= num <= Nmax
-    };
+using Node = pair<TKM, TValue>;   
+struct Block {    
+    friend UnrolledLinkedList;        
+    Address next = -1;      //next means the address of next Block in the file.        
+    int num = 0;            //num means how many valid nodes are there in this Block.
+    Node nodes[Nmax];       //This means 0 <= num <= Nmax
+};
 ```
 __Note__: Block has constant size.
 
@@ -248,13 +288,13 @@ Then write. All cliches. I wrote split logics in insert and merge in erase.
 
 ## The spirit of code: How to build this project clean and beautiful?
 
-As the saying goes, "**High aggregation and low coupling**" make a good code. 
+- As the saying goes, "**High aggregation and low coupling**" make a good code.  This embodies in the existence of `BookAndUser`, 
 
-Also, shorter code with better **packaging** are easier to write, debug and maintain. In addition, we can use **tool functions, tool headers and tool macros** smartly to eliminate duplicated code (Because of this, I only use one day to complete my **UnrollerLinkedList**, and it is extremely **short** and has **clear logic**).
+- Also, shorter code with better **packaging** are easier to write, debug and maintain. In addition, we can use **tool functions, tool headers and tool macros** smartly to eliminate duplicated code (Because of this, I only use one day to complete my `UnrollerLinkedList`, and it is extremely **short** and has **clear logic**).
 
-Fewer if-else are also better, lowering the logical complexcity of the code. We can use early return and const map to achieve this goal. See this in **function_chooser**(main), **showType**(BookData), **UnrollerLinkedList**, etc.
+- Fewer if-else are also better, lowering the logical complexcity of the code. We can use early return and const map to achieve this goal. See this in `function_chooser(main)`, `showType(BookData)`, `UnrollerLinkedList`, etc.
 
-Finally, we can write **log** like a **function decorater** (though it is not). This **decouples** business logic and log logic. You can see this clearly in my code. Almost nothing about log in **main** function.
+- Finally, we can write `log` like a **function decorater** (though it is not). This **decouples** business logic and log logic. You can see this clearly in my code. Almost nothing about log in `main` function.
 
 
 
