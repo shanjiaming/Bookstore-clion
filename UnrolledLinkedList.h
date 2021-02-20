@@ -1,5 +1,5 @@
-#define Template
-#define IO
+//#define Template
+//#define IO
 //------------------------------------
 //
 // Created by JiamingShan on 2021/1/28.
