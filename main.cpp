@@ -107,6 +107,8 @@ int main() {
 }
 
 void initialize() {
+    main_log << CUT <<CUT;
+    Info("Bookstore System Initializing");
     cout << fixed << setprecision(2);
     ifstream tester("finance.dat");
     if (!tester) {//FIXME true is only to debug

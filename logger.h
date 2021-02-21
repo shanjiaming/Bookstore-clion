@@ -34,12 +34,12 @@ inline char* nowtime(){
     return ctime(&now);
 }
 
-#define ACT_INFO   nowtime() << ':' << __FUNCTION__//TODO
+#define ACT_INFO   nowtime() << __FUNCTION__//TODO
 
 #define CUT "---------------------------------------------\n"
 #define Info(x)    main_log << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'
-#define Success    main_log << GREEN  << ACT_INFO  << ": success: " << __FUNCTION__ << END << '\n' << CUT
-#define Error(x)   main_log << RED    << ACT_INFO  << ": error: " << x << END << '\n' << CUT
+#define Success    main_log << GREEN  << "success: " << __FUNCTION__ << END << '\n' << CUT
+#define Error(x)   main_log << RED  << "error: " << x << END << '\n' << CUT
 
 #define CHECKSTACK  user_vector.empty()?"NULL":
 #define USER main_log << YELLOW << "user_id=" << (CHECKSTACK user_vector.back().user_id) << " authority=" << (user_vector.empty()?0:user_vector.back().authority) << END << '\n'
