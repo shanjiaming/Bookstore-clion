@@ -2,7 +2,9 @@
 
 ----
 
-written by shanjiaming
+written by 
+
+shanjiaming 520030910138
 
 ----
 
@@ -280,8 +282,8 @@ First we made some packaging to file manipulation. It included `filemanip.h` and
 
 ```
 void getblock(Address x, Block &b);
-void putblock(Address x, Block &b);
-void putblockend(Block &b);
+void putblock(Address x, const Block &b);
+void putblockend(const Block &b);
 ```
 
 Then write. All cliches. I wrote split logics in insert and merge in erase.

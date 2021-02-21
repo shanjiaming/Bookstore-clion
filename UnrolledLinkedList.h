@@ -51,7 +51,7 @@ private:
 
     TKM hash(TKey arg);
 
-    static const int Nmax = 4;
+    static const int Nmax = 400;
 
     struct Block {
         friend UnrolledLinkedList;
@@ -62,9 +62,9 @@ private:
 
     void getblock(Address x, Block &b);
 
-    void putblock(Address x, Block &b);
+    void putblock(Address x, const Block &b);
 
-    void putblockend(Block &b);
+    void putblockend(const Block &b);
 
 
 public:

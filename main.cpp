@@ -7,7 +7,8 @@ freopen("../myout.txt", "w", stdout);\
 #include "BookAndUser.h"
 #include "logger.h"
 
-class ErrorOccur {};
+class ErrorOccur {
+};
 
 //-------------------------------------------------
 
@@ -37,6 +38,8 @@ namespace tool {
     void checkAuthority(Authority x);
 
     void printBookVector(vector<Book> v_book);
+
+    void printOperationVector(const vector<Operation> &op);
 
     void addFinance(Sign, Price);
 
@@ -119,7 +122,6 @@ void initialize() {
     } else {
         tester.close();
     }
-    //TODO?
     Success;
 }
 
@@ -226,7 +228,7 @@ void function_chooser() {
         return;
     }
     if (regex_search(input, parameter, rule_modify)) {
-        //FIXME: if these value are "" or -1, change won't happen. there include other place like show function
+        //if these value are "" or -1, change won't happen. there include other place like show function
         ISBN l_ISBN;
         Book_name l_bookname;
         Author l_author;
@@ -370,6 +372,7 @@ void user::useradd(User_id _user_id, Passwd _passwd, Authority _authority, User_
         user_data.insert(User(_user_id, _passwd, _user_name, _authority));
     }
     Success;
+    OInfo
 }
 
 void user::registerAccount(User_id _user_id, Passwd _passwd, User_name _user_name) {
@@ -394,6 +397,7 @@ void user::deleteAccount(User_id _user_id) {
         throw ErrorOccur();
     }
     Success;
+    OInfo
 }
 
 void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
@@ -417,6 +421,7 @@ void user::passwd(User_id _user_id, Passwd _old_passwd, Passwd _new_passwd) {
     strcpy(l_user.passwd, _new_passwd.c_str());
     user_data.insert(l_user);
     Success;
+    OInfo
 }
 
 
@@ -433,8 +438,7 @@ void book::select(ISBN _isbn) {
 
 void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _keyword, Price _price) {
     BOOK;
-    tool::checkAuthority(3);//FIXME
-//    FindAndPopSelectedBook
+    tool::checkAuthority(3);
     if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
         Error("NO SELECTED BOOK");
         throw ErrorOccur();
@@ -486,34 +490,27 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     if (_price != 0) {
         tbook.price = _price;
     }
-//    book_data.insert(tbook);
     book_data.change(usb2, tbook);
     Success;
-    OInfo;
+    OInfoWithBook;
 }
 
 void book::import(Quantity _quantity, Price _price) {
     BOOK;
     tool::checkAuthority(3);
-//    FindAndPopSelectedBook
     if (user_vector.empty() || !strcmp(user_vector.back().selected_book, "")) {
         Error("NO SELECTED BOOK");
         throw ErrorOccur();
     }
     cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
-//    book_data.erase(usb);
-
     tbook.quantity += _quantity;
-//    book_data.insert(tbook);
     book_data.change(usb, tbook);
     tool::addFinance('-', _price);
     Success;
-
-
     FInfo("  BookISBN=" << usb << "  Quantity=" << _quantity << "  Cost Per Book=" << double(_price) / _quantity
                         << "  Total Cost=" << _price);
-    OInfo;
+    OInfoWithBook;
 }
 
 void book::show(BookInfoType _infotype, StringType _info) {
@@ -576,6 +573,7 @@ void book::buy(ISBN _isbn, Quantity _quantity) {
     Success;
     FInfo("  BookISBN=" << _isbn << "  Quantity=" << _quantity << "  Income Per Book=" << tbook.price
                         << "  Total Income=" << total_price);
+    OInfo
 }
 
 
@@ -608,10 +606,14 @@ void sys::reportFinance() {//问题：未算总价，总价本来是可以记录
 
 void sys::reportEmployee() {
     tool::checkAuthority(7);
-OFLUSHLOG;
+    OFLUSHLOG;
     map<User_id, vector<Operation> > employeesOperations;
     ifstream fin("operation.dat", ios::binary | ios::in);
-    fin.seekg(0);
+    vector<User> all_users = user_data.findAll();
+    for (auto one_user : all_users){
+        if (one_user.authority == 3)
+            employeesOperations[one_user.user_id];
+    }
     while (true) {
         Operation temp;
         fread(fin, temp);
@@ -620,21 +622,20 @@ OFLUSHLOG;
             employeesOperations[temp.user_id].push_back(temp);
         }
     }
-
     fin.close();
     cout << CUT << '\n';
     for (auto employeeOperations : employeesOperations) {
-//        cout << __LINE__ << endl;
-        cout << CUT << YELLOW << "Employee: UserID=" << employeeOperations.first << END << '\n' << CUT;
-        for (auto oper : employeeOperations.second) {
-//            cout << __LINE__ << endl;
-            cout << YELLOW << "Date:" << oper.date <<
-                 "  Time:" << oper.time << END << '\n';
-            cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
-            cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
+        bool has_user = false;
+        for (auto one_user : all_users){
+            if (string(one_user.user_id) == employeeOperations.first){
+                has_user = true;
+                break;
+            }
         }
-        cout << CUT;
+        cout << CUT << YELLOW << "Employee: UserID=" << employeeOperations.first << END << '\n';
+        if (!has_user) cout << RED << "(Now Resigned)" << END << '\n';
 
+        tool::printOperationVector(employeeOperations.second);
     }
     cout << CUT << '\n';
 
@@ -646,21 +647,13 @@ void sys::reportMyself() {
     vector<Operation> myop;
     OFLUSHLOG;
     ifstream fin("operation.dat", ios::binary | ios::in);
-    fin.seekg(0);
     while (true) {
         Operation temp;
         fread(fin, temp);
         if (!fin) break;
         if (!strcmp(temp.user_id, user_vector.back().user_id))myop.push_back(temp);
     }
-    cout << CUT;
-    for (auto oper : myop) {
-        cout << YELLOW << "Date:" << oper.date <<
-             "  Time:" << oper.time << END << '\n';
-        cout << YELLOW << "Selected book_id=" << oper.selected_book << END << '\n';
-        cout << YELLOW << "Opertion:" << oper.input << END << '\n' << '\n';
-    }
-    cout << CUT;
+    tool::printOperationVector(myop);
     Success;
 }
 
@@ -689,7 +682,7 @@ void tool::checkAuthority(Authority x) {
     }
 }
 
-void tool::printBookVector(vector<Book> v_book) {//TODO sorted by isbn
+void tool::printBookVector(vector<Book> v_book) {//sorted by isbn
     sort(v_book.begin(), v_book.end());
     if (v_book.empty()) {
         cout << endl;
@@ -701,9 +694,23 @@ void tool::printBookVector(vector<Book> v_book) {//TODO sorted by isbn
     }
 }
 
+void tool::printOperationVector(const vector<Operation> &op){
+    cout << CUT;
+    if (op.empty()){
+        cout << "No Operation" << '\n';
+        return;
+    }
+    for (auto oper : op) {
+        cout << YELLOW << oper.op_time;
+        if (strcmp(oper.selected_book, "") != 0)
+            cout << "Selected book_id=" << oper.selected_book << '\n';
+        cout << "Opertion:" << oper.input << END << '\n' << '\n';
+    }
+    cout << CUT;
+}
+
 void tool::addFinance(Sign _c, Price _price) {
     int I = ((_c == '+') ? 0 : sizeof(Price));
-//    finance_vector.push_back(Finance(_c, _price));
     fstream finance_file("finance.dat", ios::binary | ios::in | ios::out);
     finance_file.seekg(I);
     Price temp;

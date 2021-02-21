@@ -4,15 +4,10 @@
 #include "UnrolledLinkedList.h"
 
 UnrolledLinkedList::UnrolledLinkedList(const FileName &_fileName) : fileName(_fileName) {
-    ifstream fin(_fileName);
-    if (fin) return;
-    ofstream fout(_fileName);
-    assert(fout);
-    fout.close();
-    file.open(_fileName);
-    file.seekp(0);
-    fwrite(file, Block());
-    file.close();
+    fcreate(_fileName);
+    openfile
+    putblock(0, Block());
+    closefile
 }
 
 
@@ -46,12 +41,12 @@ void UnrolledLinkedList::getblock(TValue x, Block &b) {
     fread(file, b);
 }
 
-void UnrolledLinkedList::putblock(TValue x, Block &b) {
+void UnrolledLinkedList::putblock(TValue x, const Block &b) {
     file.seekp(x);
     fwrite(file, b);
 };
 
-void UnrolledLinkedList::putblockend(Block &b) {
+void UnrolledLinkedList::putblockend(const Block &b) {
     file.seekp(0, ios::end);
     fwrite(file, b);
 }
