@@ -452,11 +452,9 @@ void book::modify(ISBN _isbn, Book_name _book_name, Author _author, Keyword _key
     }
     cISBN &usb = user_vector.back().selected_book;
     Book tbook = book_data.find(usb);
-//    book_data.erase(usb);
     cISBN usb2;
     strcpy(usb2, usb);
     if (_isbn != "") {
-//        strcpy(usb, _isbn.c_str());
         for (auto &u : user_vector) {
             if (!strcmp(u.selected_book, usb2)) {
                 strcpy(u.selected_book, _isbn.c_str());

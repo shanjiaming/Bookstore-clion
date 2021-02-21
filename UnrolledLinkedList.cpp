@@ -4,7 +4,18 @@
 #include "UnrolledLinkedList.h"
 
 UnrolledLinkedList::UnrolledLinkedList(const FileName &_fileName) : fileName(_fileName) {
-    fcreate(_fileName);
+//    fcreate(_fileName);
+//    openfile
+//    putblock(0, Block());
+//    closefile
+    ifstream fin(_fileName);
+    if (fin){
+        fin.close();
+        return;
+    }
+    ofstream fout(_fileName);
+    assert(fout);
+    fout.close();
     openfile
     putblock(0, Block());
     closefile

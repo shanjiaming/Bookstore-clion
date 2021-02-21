@@ -15,7 +15,10 @@ typedef int Address;
 
 inline void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我猜测无关紧要。
     ifstream fin(fn);
-    if (fin) return;
+    if (fin) {
+        fin.close();
+        return;
+    }
     ofstream fooo(fn);
     assert(fooo);
     fooo.close();
