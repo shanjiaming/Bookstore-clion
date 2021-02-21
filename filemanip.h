@@ -13,7 +13,7 @@ using namespace std;
 typedef string FileName;
 typedef int Address;
 
-inline void fcreate(FileName fn){//FIXME 这里并没有用二进制打开，但是我猜测无关紧要。
+inline void fcreate(FileName fn){//OK to not to use ios::binary
     ifstream fin(fn);
     if (fin) {
         fin.close();

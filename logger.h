@@ -34,7 +34,7 @@ inline char* nowtime(){
     return ctime(&now);
 }
 
-#define ACT_INFO   nowtime() << __FUNCTION__//TODO
+#define ACT_INFO   nowtime() << __FUNCTION__
 
 #define CUT "---------------------------------------------\n"
 #define Info(x)    main_log << YELLOW  << ACT_INFO  << ": info: " << x << END << '\n'

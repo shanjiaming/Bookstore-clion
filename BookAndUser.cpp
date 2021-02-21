@@ -15,7 +15,7 @@ vector<Book> BookData::showType(BookInfoType _infotype, string _info) {
                                                                     {t_Keyword,   &book_keyword_table}};
     for (auto itype : c_BookInfoTypes) {
         if (_infotype == itype) {
-            return vAdd2vBook(c_bookShowFileMap.at(itype)->findVector(_info));//TODO debug
+            return vAdd2vBook(c_bookShowFileMap.at(itype)->findVector(_info));
         }
     }
 }
@@ -66,7 +66,7 @@ Book BookData::find(const ISBN &key) {
     return data_book.find(book_isbn_table.find(key));
 }
 
-vector<Book> BookData::findAll() {//TODO 这个不知道在那个位置实现。不过先不管了，总有办法的。
+vector<Book> BookData::findAll() {
     return vAdd2vBook(book_isbn_table.findAll());
 }
 

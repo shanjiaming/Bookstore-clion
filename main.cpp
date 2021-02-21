@@ -10,8 +10,6 @@ freopen("../myout.txt", "w", stdout);\
 class ErrorOccur {
 };
 
-//-------------------------------------------------
-
 ofstream main_log("log.dat", ios::app);
 ofstream finance_log("financelog.dat", ios::app);
 ofstream operation_log("operation.dat", ios::app | ios::binary);
@@ -25,9 +23,6 @@ string input;
 
 
 //-------------------------------------------------
-//private Macros and functions
-
-
 
 void initialize();
 
@@ -107,11 +102,11 @@ int main() {
 }
 
 void initialize() {
-    main_log << CUT <<CUT;
+    main_log << CUT << CUT;
     Info("Bookstore System Initializing");
     cout << fixed << setprecision(2);
     ifstream tester("finance.dat");
-    if (!tester) {//FIXME true is only to debug
+    if (!tester) {
         fcreate("finance.dat");
         fstream fs("finance.dat", ios::binary | ios::out | ios::in);
         fs.seekp(0);

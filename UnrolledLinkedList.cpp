@@ -84,11 +84,11 @@ void UnrolledLinkedList::insert(const TKey &_key, const TValue &o) {
         getblock(bl.next, bl);
     }
     int insert_pos = lower_bound(bl.nodes, bl.nodes + bl.num, insert_node) - bl.nodes;
-    if (bl.num < Nmax) {//insert directly 0-base!
+    if (bl.num < Nmax) {//insert directly
         if (bl.num == insert_pos) {
             bl.nodes[insert_pos] = insert_node;
         } else {
-            Node temp = insert_node;//FIXME 严重怀疑char数组无法赋值，因此node无法赋值。
+            Node temp = insert_node;
             Node record;
             for (int i = insert_pos; i <= bl.num; ++i) {
                 record = bl.nodes[i];
@@ -141,11 +141,11 @@ void UnrolledLinkedList::erase(const TKey &_key, const TValue &o) {
     for (int i = erase_pos + 1; i < bl.num; ++i) {
         bl.nodes[i - 1] = bl.nodes[i];
     }
-    --bl.num;//
-    if (bl.next != -1) {//这么写可读性很不好，然而是getblock没法直接返回值的锅。
+    --bl.num;
+    if (bl.next != -1) {//merge
         Block bl_next;
         getblock(bl.next, bl_next);
-        if (bl.num + bl_next.num <= Nmax) {//merge
+        if (bl.num + bl_next.num <= Nmax) {
             for (int i = 0; i < bl_next.num; ++i) {
                 bl.nodes[i + bl.num] = bl_next.nodes[i];
             }

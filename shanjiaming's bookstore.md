@@ -211,7 +211,7 @@ public:
 
 It functions as map<Address, T>, storing the real data of books and users. Easy and short. 
 
-Note: it does not have .cpp file. This is because usually, the definition of a template class is also in the header, says《C++  Primer中文版（第五版》p582, 模板编译。
+Note: it does not have .cpp file. That is because usually, the definition of a template class is also in the header, says《C++  Primer中文版（第五版》p582, 模板编译。
 
 ## UnrolledLinkedList
 
